@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LPG Manager BD</title>
+    <meta name="description" content="Desktop-first LPG cylinder distribution and godown management software for Bangladesh distributors." />
+    <meta property="og:title" content="LPG Manager BD" />
+    <meta property="og:description" content="Desktop-first LPG cylinder distribution and godown management software for Bangladesh distributors." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      (function() {
+        try {
+          var targets = [window, Window.prototype];
+          for (var i = 0; i < targets.length; i++) {
+            var target = targets[i];
+            var desc = Object.getOwnPropertyDescriptor(target, 'fetch');
+            if (desc && desc.get && !desc.set) {
+              Object.defineProperty(target, 'fetch', {
+                get: desc.get,
+                set: function(val) {
+                  try {
+                    Object.defineProperty(window, 'fetch', {
+                      value: val,
+                      writable: true,
+                      configurable: true,
+                      enumerable: true
+                    });
+                  } catch (err) {}
+                },
+                configurable: true,
+                enumerable: true
+              });
+            }
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-slate-50 text-slate-900 antialiased font-sans select-none">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
