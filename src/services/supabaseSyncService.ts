@@ -44,6 +44,7 @@ export const syncAllToSupabase = async (data: {
   }
 
   const counts: Record<string, number> = {};
+  const errors: string[] = [];
 
   try {
     // 1. Profiles / Users
@@ -58,7 +59,11 @@ export const syncAllToSupabase = async (data: {
         status: u.status,
       }));
       const { error: profErr } = await supabase.from('profiles').upsert(formattedProfiles, { onConflict: 'id' });
-      if (!profErr) counts.profiles = formattedProfiles.length;
+      if (profErr) {
+        errors.push(`profiles: ${profErr.message} (code: ${profErr.code})`);
+      } else {
+        counts.profiles = formattedProfiles.length;
+      }
     }
 
     // 2. Products
@@ -83,7 +88,11 @@ export const syncAllToSupabase = async (data: {
         active: p.active,
       }));
       const { error: prodErr } = await supabase.from('products').upsert(formattedProducts, { onConflict: 'id' });
-      if (!prodErr) counts.products = formattedProducts.length;
+      if (prodErr) {
+        errors.push(`products: ${prodErr.message} (code: ${prodErr.code})`);
+      } else {
+        counts.products = formattedProducts.length;
+      }
     }
 
     // 3. Customers
@@ -103,7 +112,11 @@ export const syncAllToSupabase = async (data: {
         cylinder_holdings: c.cylinderHoldings || [],
       }));
       const { error: custErr } = await supabase.from('customers').upsert(formattedCustomers, { onConflict: 'id' });
-      if (!custErr) counts.customers = formattedCustomers.length;
+      if (custErr) {
+        errors.push(`customers: ${custErr.message} (code: ${custErr.code})`);
+      } else {
+        counts.customers = formattedCustomers.length;
+      }
     }
 
     // 4. Suppliers
@@ -119,7 +132,11 @@ export const syncAllToSupabase = async (data: {
         current_payable: s.currentPayable,
       }));
       const { error: suppErr } = await supabase.from('suppliers').upsert(formattedSuppliers, { onConflict: 'id' });
-      if (!suppErr) counts.suppliers = formattedSuppliers.length;
+      if (suppErr) {
+        errors.push(`suppliers: ${suppErr.message} (code: ${suppErr.code})`);
+      } else {
+        counts.suppliers = formattedSuppliers.length;
+      }
     }
 
     // 5. Sales
@@ -147,7 +164,11 @@ export const syncAllToSupabase = async (data: {
         created_at: s.createdAt,
       }));
       const { error: saleErr } = await supabase.from('sales').upsert(formattedSales, { onConflict: 'id' });
-      if (!saleErr) counts.sales = formattedSales.length;
+      if (saleErr) {
+        errors.push(`sales: ${saleErr.message} (code: ${saleErr.code})`);
+      } else {
+        counts.sales = formattedSales.length;
+      }
     }
 
     // 6. Settings
@@ -156,11 +177,28 @@ export const syncAllToSupabase = async (data: {
       settings: data.settings,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'id' });
-    if (!settErr) counts.settings = 1;
+    if (settErr) {
+      errors.push(`app_settings: ${settErr.message} (code: ${settErr.code})`);
+    } else {
+      counts.settings = 1;
+    }
+
+    const totalSynced = Object.values(counts).reduce((a, b) => a + b, 0);
+
+    if (errors.length > 0 && totalSynced === 0) {
+      const isMissingTables = errors.some(e => e.includes('PGRST205') || e.includes('does not exist') || e.includes('schema cache'));
+      return {
+        success: false,
+        message: isMissingTables
+          ? 'Cannot push data to Supabase: The PostgreSQL tables have not been created yet in this Supabase database (PGRST205: table not found in schema cache). Please open your Supabase project SQL Editor and execute the schema.sql script to provision the tables.'
+          : `Push failed with errors: ${errors.slice(0, 3).join('; ')}`,
+        error: errors.join('; '),
+      };
+    }
 
     return {
       success: true,
-      message: `Successfully synchronized ${Object.values(counts).reduce((a, b) => a + b, 0)} records across tables with Supabase!`,
+      message: `Successfully synchronized ${totalSynced} records across tables with Supabase!${errors.length > 0 ? ` Note: ${errors.length} tables had issues.` : ''}`,
       syncedCounts: counts,
     };
   } catch (err: any) {
