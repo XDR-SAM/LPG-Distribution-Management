@@ -26,6 +26,11 @@ export const CustomerListView: React.FC = () => {
     setActiveView,
     setSelectedCustomerForDetails,
     setIsReceiveEmptyModalOpen,
+    t,
+    language,
+    formatCurrency,
+    formatQty,
+    toBnNum,
   } = useApp();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -131,9 +136,9 @@ export const CustomerListView: React.FC = () => {
       {/* Header */}
       <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-black text-slate-900 tracking-tight">Customers & Dealer Directory</h1>
+          <h1 className="text-lg font-black text-slate-900 tracking-tight">{t('customer.directory_title')}</h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage dealer credit accounts, retail stores, restaurant clients, and cylinder receivables
+            {t('customer.directory_subtitle')}
           </p>
         </div>
 
@@ -143,14 +148,14 @@ export const CustomerListView: React.FC = () => {
             className="px-3.5 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-900 rounded-md text-xs font-bold transition-colors flex items-center gap-1.5"
           >
             <Flame className="w-4 h-4 text-purple-600" />
-            <span>Cylinder Due Account</span>
+            <span>{t('customer.cylinder_due_account')}</span>
           </button>
           <button
             onClick={openAddModal}
             className="px-3.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-md text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5"
           >
             <Plus className="w-4 h-4" />
-            <span>Add Customer</span>
+            <span>{t('customer.add_customer')}</span>
           </button>
         </div>
       </div>
@@ -162,7 +167,7 @@ export const CustomerListView: React.FC = () => {
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search by business name, proprietor, phone, area..."
+              placeholder={t('customer.search_placeholder')}
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded font-medium text-slate-900 text-xs"
@@ -174,12 +179,12 @@ export const CustomerListView: React.FC = () => {
             onChange={e => setTypeFilter(e.target.value)}
             className="px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded font-medium text-slate-700"
           >
-            <option value="ALL">All Categories</option>
-            <option value="dealer">Dealers</option>
-            <option value="retail_shop">Retail Shops</option>
-            <option value="restaurant">Restaurants</option>
-            <option value="hotel">Hotels</option>
-            <option value="commercial">Commercial</option>
+            <option value="ALL">{t('customer.all_categories')}</option>
+            <option value="dealer">{t('sales.dealer')}</option>
+            <option value="retail_shop">{t('sales.retailer')}</option>
+            <option value="restaurant">{t('customer.restaurants')}</option>
+            <option value="hotel">{t('customer.hotels')}</option>
+            <option value="commercial">{t('sales.commercial')}</option>
           </select>
 
           <select
@@ -187,7 +192,7 @@ export const CustomerListView: React.FC = () => {
             onChange={e => setAreaFilter(e.target.value)}
             className="px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded font-medium text-slate-700"
           >
-            <option value="ALL">All Delivery Areas</option>
+            <option value="ALL">{t('customer.all_areas')}</option>
             {areas.map(a => (
               <option key={a} value={a}>{a}</option>
             ))}
@@ -195,7 +200,11 @@ export const CustomerListView: React.FC = () => {
         </div>
 
         <div className="text-slate-500 font-medium">
-          Showing <strong>{filtered.length}</strong> of <strong>{customers.length}</strong> customers
+          {language === 'bn' ? (
+            <>মোট <strong>{toBnNum(customers.length)}</strong> জনের মধ্যে <strong>{toBnNum(filtered.length)}</strong> জন গ্রাহক প্রদর্শিত হচ্ছে</>
+          ) : (
+            <>Showing <strong>{filtered.length}</strong> of <strong>{customers.length}</strong> customers</>
+          )}
         </div>
       </div>
 
@@ -205,13 +214,13 @@ export const CustomerListView: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
               <tr>
-                <th className="px-3 py-2.5">Business & Contact</th>
-                <th className="px-3 py-2.5">Phone & Area</th>
-                <th className="px-3 py-2.5">Type</th>
-                <th className="px-3 py-2.5 text-right">Current Due (৳)</th>
-                <th className="px-3 py-2.5 text-right">Credit Limit (৳)</th>
-                <th className="px-3 py-2.5 text-center">Empty Cylinders Due</th>
-                <th className="px-3 py-2.5 text-right">Actions</th>
+                <th className="px-3 py-2.5">{t('customer.business_contact')}</th>
+                <th className="px-3 py-2.5">{t('customer.phone_area')}</th>
+                <th className="px-3 py-2.5">{t('sales.type')}</th>
+                <th className="px-3 py-2.5 text-right">{t('customer.current_due')}</th>
+                <th className="px-3 py-2.5 text-right">{t('customer.credit_limit')}</th>
+                <th className="px-3 py-2.5 text-center">{t('customer.empty_cylinders_due')}</th>
+                <th className="px-3 py-2.5 text-right">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -223,12 +232,14 @@ export const CustomerListView: React.FC = () => {
                   <tr key={c.id} className="hover:bg-slate-50/80">
                     <td className="px-3 py-2.5">
                       <div className="font-bold text-slate-900">{c.businessName}</div>
-                      <div className="text-[11px] text-slate-500">Prop: {c.contactPerson}</div>
+                      <div className="text-[11px] text-slate-500">
+                        {language === 'bn' ? 'স্বত্বাধিকারী: ' : 'Prop: '}{c.contactPerson}
+                      </div>
                     </td>
 
                     <td className="px-3 py-2.5">
                       <div className="font-semibold text-slate-800 flex items-center gap-1">
-                        <Phone className="w-3 h-3 text-slate-400" /> {c.phone}
+                        <Phone className="w-3 h-3 text-slate-400" /> {toBnNum(c.phone)}
                       </div>
                       <div className="text-[11px] text-slate-400 flex items-center gap-1">
                         <MapPin className="w-3 h-3 text-slate-400" /> {c.area}
@@ -241,21 +252,21 @@ export const CustomerListView: React.FC = () => {
 
                     <td className="px-3 py-2.5 text-right">
                       <span className={`font-black text-sm ${c.currentDue > 0 ? 'text-rose-600' : 'text-slate-600'}`}>
-                        {formatBDT(c.currentDue)}
+                        {formatCurrency(c.currentDue)}
                       </span>
                       {isOverLimit && (
                         <div className="text-[10px] text-rose-700 font-bold flex items-center justify-end gap-0.5">
-                          <AlertTriangle className="w-3 h-3" /> Over Limit!
+                          <AlertTriangle className="w-3 h-3" /> {t('customer.over_limit')}
                         </div>
                       )}
                     </td>
 
                     <td className="px-3 py-2.5 text-right font-medium text-slate-700">
-                      {formatBDT(c.creditLimit)}
+                      {formatCurrency(c.creditLimit)}
                     </td>
 
                     <td className="px-3 py-2.5 text-center">
-                      <CylinderDueBadge count={totalEmptyDue} label="due" />
+                      <CylinderDueBadge count={totalEmptyDue} label={language === 'bn' ? 'বাকি' : 'due'} />
                     </td>
 
                     <td className="px-3 py-2.5 text-right">
@@ -266,10 +277,10 @@ export const CustomerListView: React.FC = () => {
                             setActiveView('customer_ledger');
                           }}
                           className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-semibold text-[11px] flex items-center gap-1"
-                          title="View Ledger Statement"
+                          title={t('customer.ledger')}
                         >
                           <FileText className="w-3 h-3 text-blue-600" />
-                          <span>Ledger</span>
+                          <span>{t('customer.ledger')}</span>
                         </button>
                         <button
                           onClick={() => {
@@ -277,14 +288,14 @@ export const CustomerListView: React.FC = () => {
                             setActiveView('accounts_receive');
                           }}
                           className="p-1 rounded text-emerald-600 hover:bg-emerald-50"
-                          title="Receive Payment"
+                          title={t('customer.receive_payment')}
                         >
                           <ArrowDownLeft className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => openEditModal(c)}
                           className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100"
-                          title="Edit Customer Details"
+                          title={t('common.edit')}
                         >
                           <Edit className="w-3.5 h-3.5" />
                         </button>
@@ -305,7 +316,7 @@ export const CustomerListView: React.FC = () => {
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <Users className="w-4 h-4 text-orange-600" />
-                <span>{editingCustomer ? 'Edit Customer Profile' : 'Add New Customer / Dealer'}</span>
+                <span>{editingCustomer ? t('customer.edit_profile') : t('customer.add_new')}</span>
               </h3>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-4 h-4" />
@@ -315,7 +326,7 @@ export const CustomerListView: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2">
-                  <label className="block font-bold text-slate-700 mb-1">Business / Shop Name *</label>
+                  <label className="block font-bold text-slate-700 mb-1">{t('customer.shop_name')}</label>
                   <input
                     type="text"
                     required
@@ -327,7 +338,7 @@ export const CustomerListView: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Proprietor / Contact Person *</label>
+                  <label className="block font-bold text-slate-700 mb-1">{t('customer.proprietor')}</label>
                   <input
                     type="text"
                     required
@@ -339,7 +350,7 @@ export const CustomerListView: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Primary Phone Number *</label>
+                  <label className="block font-bold text-slate-700 mb-1">{t('customer.primary_phone')}</label>
                   <input
                     type="text"
                     required
@@ -351,22 +362,22 @@ export const CustomerListView: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Customer Category</label>
+                  <label className="block font-bold text-slate-700 mb-1">{t('customer.category')}</label>
                   <select
                     value={customerType}
                     onChange={e => setCustomerType(e.target.value as CustomerType)}
                     className="w-full p-2 border border-slate-300 rounded"
                   >
-                    <option value="dealer">LPG Dealer / Sub-Dealer</option>
-                    <option value="retail_shop">Retail Grocery / Hardware Shop</option>
-                    <option value="restaurant">Restaurant / Hotel Kitchen</option>
-                    <option value="hotel">Commercial Hotel</option>
-                    <option value="commercial">Industrial / Commercial Plant</option>
+                    <option value="dealer">{t('customer.dealers')}</option>
+                    <option value="retail_shop">{t('customer.retail_shops')}</option>
+                    <option value="restaurant">{t('customer.restaurants')}</option>
+                    <option value="hotel">{t('customer.hotels')}</option>
+                    <option value="commercial">{t('customer.commercial_plants')}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Delivery Area / Zone</label>
+                  <label className="block font-bold text-slate-700 mb-1">{t('customer.delivery_area')}</label>
                   <input
                     type="text"
                     value={area}
@@ -377,7 +388,7 @@ export const CustomerListView: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Credit Limit (৳)</label>
+                  <label className="block font-bold text-slate-700 mb-1">{t('customer.credit_limit')}</label>
                   <input
                     type="number"
                     value={creditLimit}
@@ -387,7 +398,7 @@ export const CustomerListView: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Credit Terms (Days)</label>
+                  <label className="block font-bold text-slate-700 mb-1">{t('customer.credit_terms_days')}</label>
                   <input
                     type="number"
                     value={creditPeriodDays}
@@ -397,7 +408,7 @@ export const CustomerListView: React.FC = () => {
                 </div>
 
                 <div className="col-span-2">
-                  <label className="block font-bold text-slate-700 mb-1">Shop Address</label>
+                  <label className="block font-bold text-slate-700 mb-1">{t('customer.shop_address')}</label>
                   <input
                     type="text"
                     value={address}
@@ -414,13 +425,13 @@ export const CustomerListView: React.FC = () => {
                   onClick={() => setIsModalOpen(false)}
                   className="px-3 py-1.5 bg-slate-100 rounded text-slate-700 font-semibold"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded font-bold"
                 >
-                  {editingCustomer ? 'Save Changes' : 'Create Customer'}
+                  {editingCustomer ? t('customer.save_btn') : t('customer.create_btn')}
                 </button>
               </div>
             </form>

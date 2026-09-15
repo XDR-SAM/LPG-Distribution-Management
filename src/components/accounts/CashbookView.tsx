@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { formatBDT } from '../../utils/formatters';
-import { Wallet, Building, Smartphone, ArrowDownLeft, ArrowUpRight, Search, Plus, Filter } from 'lucide-react';
+import { Wallet, Building, Smartphone, ArrowDownLeft, ArrowUpRight, Search } from 'lucide-react';
 
 export const CashbookView: React.FC = () => {
-  const { transactions, setActiveView } = useApp();
+  const { transactions, setActiveView, t, language, formatCurrency, formatDate, toBnNum } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [accountFilter, setAccountFilter] = useState('ALL');
 
@@ -30,9 +29,9 @@ export const CashbookView: React.FC = () => {
       {/* Top Header */}
       <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-black text-slate-900 tracking-tight">Cashbook & Liquid Balances</h1>
+          <h1 className="text-lg font-black text-slate-900 tracking-tight">{t('cashbook.title')}</h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Real-time multi-channel cash register: Cash in hand, Islami Bank, DBBL, and Mobile Financial Services
+            {t('cashbook.subtitle')}
           </p>
         </div>
 
@@ -42,14 +41,14 @@ export const CashbookView: React.FC = () => {
             className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold flex items-center gap-1 shadow-xs"
           >
             <ArrowDownLeft className="w-3.5 h-3.5" />
-            <span>Receive Payment</span>
+            <span>{t('cashbook.receive_btn')}</span>
           </button>
           <button
             onClick={() => setActiveView('accounts_pay')}
             className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded font-bold flex items-center gap-1 shadow-xs"
           >
             <ArrowUpRight className="w-3.5 h-3.5" />
-            <span>Pay Supplier</span>
+            <span>{t('cashbook.pay_btn')}</span>
           </button>
         </div>
       </div>
@@ -58,38 +57,38 @@ export const CashbookView: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
         <div className="bg-white p-3.5 rounded-lg border border-emerald-200 bg-emerald-50/20 shadow-2xs">
           <div className="flex items-center justify-between text-emerald-800">
-            <span className="font-bold text-[11px] uppercase">Cash in Hand</span>
+            <span className="font-bold text-[11px] uppercase">{t('cashbook.cash_in_hand')}</span>
             <Wallet className="w-4 h-4 text-emerald-600" />
           </div>
-          <span className="text-xl font-black text-emerald-950 mt-1 block">{formatBDT(cashBalance)}</span>
-          <span className="text-[10px] text-emerald-700">Main Godown Drawer</span>
+          <span className="text-xl font-black text-emerald-950 mt-1 block">{formatCurrency(cashBalance)}</span>
+          <span className="text-[10px] text-emerald-700">{t('cashbook.cash_drawer')}</span>
         </div>
 
         <div className="bg-white p-3.5 rounded-lg border border-blue-200 bg-blue-50/20 shadow-2xs">
           <div className="flex items-center justify-between text-blue-800">
-            <span className="font-bold text-[11px] uppercase">Bank (Islami / DBBL)</span>
+            <span className="font-bold text-[11px] uppercase">{t('cashbook.bank_account')}</span>
             <Building className="w-4 h-4 text-blue-600" />
           </div>
-          <span className="text-xl font-black text-blue-950 mt-1 block">{formatBDT(bankBalance)}</span>
-          <span className="text-[10px] text-blue-700">Principal CD Accounts</span>
+          <span className="text-xl font-black text-blue-950 mt-1 block">{formatCurrency(bankBalance)}</span>
+          <span className="text-[10px] text-blue-700">{t('cashbook.bank_sub')}</span>
         </div>
 
         <div className="bg-white p-3.5 rounded-lg border border-pink-200 bg-pink-50/20 shadow-2xs">
           <div className="flex items-center justify-between text-pink-800">
-            <span className="font-bold text-[11px] uppercase">bKash Merchant</span>
+            <span className="font-bold text-[11px] uppercase">{t('cashbook.bkash')}</span>
             <Smartphone className="w-4 h-4 text-pink-600" />
           </div>
-          <span className="text-xl font-black text-pink-950 mt-1 block">{formatBDT(bkashBalance)}</span>
-          <span className="text-[10px] text-pink-700">01711-XXXXXX (QR)</span>
+          <span className="text-xl font-black text-pink-950 mt-1 block">{formatCurrency(bkashBalance)}</span>
+          <span className="text-[10px] text-pink-700">{toBnNum('01711-XXXXXX')} (QR)</span>
         </div>
 
         <div className="bg-white p-3.5 rounded-lg border border-orange-200 bg-orange-50/20 shadow-2xs">
           <div className="flex items-center justify-between text-orange-800">
-            <span className="font-bold text-[11px] uppercase">Nagad Merchant</span>
+            <span className="font-bold text-[11px] uppercase">{t('cashbook.nagad')}</span>
             <Smartphone className="w-4 h-4 text-orange-600" />
           </div>
-          <span className="text-xl font-black text-orange-950 mt-1 block">{formatBDT(nagadBalance)}</span>
-          <span className="text-[10px] text-orange-700">01911-XXXXXX</span>
+          <span className="text-xl font-black text-orange-950 mt-1 block">{formatCurrency(nagadBalance)}</span>
+          <span className="text-[10px] text-orange-700">{toBnNum('01911-XXXXXX')}</span>
         </div>
       </div>
 
@@ -100,7 +99,7 @@ export const CashbookView: React.FC = () => {
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search voucher #, party name, details..."
+              placeholder={t('cashbook.search_placeholder')}
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded font-medium text-slate-900 text-xs"
@@ -112,16 +111,16 @@ export const CashbookView: React.FC = () => {
             onChange={e => setAccountFilter(e.target.value)}
             className="px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded font-medium text-slate-700"
           >
-            <option value="ALL">All Accounts</option>
-            <option value="Cash">Cash in Hand</option>
-            <option value="Bank">Bank Accounts</option>
+            <option value="ALL">{t('cashbook.all_accounts')}</option>
+            <option value="Cash">{t('cashbook.cash_in_hand')}</option>
+            <option value="Bank">{t('cashbook.bank_accounts')}</option>
             <option value="bKash">bKash</option>
             <option value="Nagad">Nagad</option>
           </select>
         </div>
 
         <div className="text-slate-700 font-bold">
-          Total Liquid Capital: <span className="text-emerald-700">{formatBDT(totalLiquidity)}</span>
+          {t('cashbook.total_liquid_capital')}: <span className="text-emerald-700">{formatCurrency(totalLiquidity)}</span>
         </div>
       </div>
 
@@ -131,32 +130,32 @@ export const CashbookView: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
               <tr>
-                <th className="px-3 py-2.5">Date</th>
-                <th className="px-3 py-2.5">Voucher No</th>
-                <th className="px-3 py-2.5">Account</th>
-                <th className="px-3 py-2.5">Party / Beneficiary</th>
-                <th className="px-3 py-2.5">Description / Purpose</th>
-                <th className="px-3 py-2.5 text-right">Debit (Cash In)</th>
-                <th className="px-3 py-2.5 text-right">Credit (Cash Out)</th>
-                <th className="px-3 py-2.5 text-right">Running Balance</th>
+                <th className="px-3 py-2.5">{t('cashbook.date')}</th>
+                <th className="px-3 py-2.5">{t('cashbook.voucher_no')}</th>
+                <th className="px-3 py-2.5">{t('cashbook.account')}</th>
+                <th className="px-3 py-2.5">{t('cashbook.party')}</th>
+                <th className="px-3 py-2.5">{t('cashbook.description')}</th>
+                <th className="px-3 py-2.5 text-right">{t('cashbook.debit_in')}</th>
+                <th className="px-3 py-2.5 text-right">{t('cashbook.credit_out')}</th>
+                <th className="px-3 py-2.5 text-right">{t('cashbook.running_balance')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filtered.map(t => (
-                <tr key={t.id} className="hover:bg-slate-50/80">
-                  <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{t.date}</td>
-                  <td className="px-3 py-2.5 font-mono font-bold text-slate-900">{t.voucherNo}</td>
-                  <td className="px-3 py-2.5 font-semibold text-slate-700">{t.account}</td>
-                  <td className="px-3 py-2.5 font-medium text-slate-900">{t.partyName || '—'}</td>
-                  <td className="px-3 py-2.5 text-slate-600">{t.description}</td>
+              {filtered.map(tItem => (
+                <tr key={tItem.id} className="hover:bg-slate-50/80">
+                  <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{formatDate(tItem.date)}</td>
+                  <td className="px-3 py-2.5 font-mono font-bold text-slate-900">{toBnNum(tItem.voucherNo)}</td>
+                  <td className="px-3 py-2.5 font-semibold text-slate-700">{tItem.account}</td>
+                  <td className="px-3 py-2.5 font-medium text-slate-900">{tItem.partyName || '—'}</td>
+                  <td className="px-3 py-2.5 text-slate-600">{tItem.description}</td>
                   <td className="px-3 py-2.5 text-right font-bold text-emerald-700">
-                    {t.debit > 0 ? formatBDT(t.debit) : '—'}
+                    {tItem.debit > 0 ? formatCurrency(tItem.debit) : '—'}
                   </td>
                   <td className="px-3 py-2.5 text-right font-bold text-rose-700">
-                    {t.credit > 0 ? formatBDT(t.credit) : '—'}
+                    {tItem.credit > 0 ? formatCurrency(tItem.credit) : '—'}
                   </td>
                   <td className="px-3 py-2.5 text-right font-extrabold text-slate-900">
-                    {formatBDT(t.balance)}
+                    {formatCurrency(tItem.balance)}
                   </td>
                 </tr>
               ))}

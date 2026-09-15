@@ -1,4 +1,5 @@
 import React from 'react';
+import { LanguageProvider } from './context/LanguageContext';
 import { AppProvider, useApp } from './context/AppContext';
 import { Sidebar } from './components/layout/Sidebar';
 import { TopBar } from './components/layout/TopBar';
@@ -9,7 +10,13 @@ import { PrintInvoiceModal } from './components/modals/PrintInvoiceModal';
 import { PrintChallanModal } from './components/modals/PrintChallanModal';
 import { PrintMoneyReceiptModal } from './components/modals/PrintMoneyReceiptModal';
 
-// Views
+// RBAC & Supabase views
+import { UsersRolesView } from './components/settings/UsersRolesView';
+import { SupabaseSyncView } from './components/settings/SupabaseSyncView';
+import { RestrictedView } from './components/common/RestrictedView';
+import { canAccessView } from './utils/rbac';
+
+// Standard Views
 import { DashboardView } from './components/dashboard/DashboardView';
 import { NewSaleView } from './components/sales/NewSaleView';
 import { SalesListView } from './components/sales/SalesListView';
@@ -36,11 +43,19 @@ import { SettingsView } from './components/settings/SettingsView';
 import { AuditLogsView } from './components/audit/AuditLogsView';
 
 const MainContent: React.FC = () => {
-  const { activeView } = useApp();
+  const { activeView, currentUser } = useApp();
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
+  const currentRole = currentUser?.role || 'admin';
+
   const renderView = () => {
+    // 1. RBAC Check: Ensure role is permitted to access activeView
+    if (activeView !== 'dashboard' && !canAccessView(currentRole, activeView)) {
+      return <RestrictedView viewName={activeView} />;
+    }
+
+    // 2. Render target view
     switch (activeView) {
       case 'dashboard':
         return <DashboardView />;
@@ -49,7 +64,9 @@ const MainContent: React.FC = () => {
         return <NewSaleView />;
       case 'sales_list':
         return <SalesListView />;
+      case 'sales_challan':
       case 'sales_challans':
+      case 'delivery_list':
         return <ChallanListView />;
       case 'sales_returns':
         return <SaleReturnsView />;
@@ -84,13 +101,19 @@ const MainContent: React.FC = () => {
       case 'accounts_summary':
         return <AccountsSummaryView />;
       case 'report_daily':
+      case 'reports_center':
         return <DailyReportView />;
       case 'report_cylinder_audit':
         return <CylinderAuditView />;
       case 'settings':
         return <SettingsView />;
+      case 'audit_log':
       case 'audit_logs':
         return <AuditLogsView />;
+      case 'users_roles':
+        return <UsersRolesView />;
+      case 'supabase_sync':
+        return <SupabaseSyncView />;
       default:
         return <DashboardView />;
     }
@@ -108,7 +131,7 @@ const MainContent: React.FC = () => {
 
       {/* Main Workspace Area */}
       <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden">
-        {/* Top bar with quick stats, search trigger, and notifications */}
+        {/* Top bar with quick stats, search trigger, notifications, and RBAC switcher */}
         <TopBar
           collapsed={sidebarCollapsed}
           setCollapsed={setSidebarCollapsed}
@@ -134,8 +157,10 @@ const MainContent: React.FC = () => {
 
 export default function App() {
   return (
-    <AppProvider>
-      <MainContent />
-    </AppProvider>
+    <LanguageProvider>
+      <AppProvider>
+        <MainContent />
+      </AppProvider>
+    </LanguageProvider>
   );
 }

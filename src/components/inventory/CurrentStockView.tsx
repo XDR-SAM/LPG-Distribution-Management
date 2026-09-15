@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { StockStatusBadge } from '../common/Badge';
 import { formatBDT, formatNumber } from '../../utils/formatters';
 import { Product } from '../../types';
+import { RoleGate } from '../common/RoleGate';
 import {
   Boxes,
   Plus,
@@ -24,6 +25,11 @@ export const CurrentStockView: React.FC = () => {
     updateProduct,
     setIsAdjustStockModalOpen,
     setIsReceiveEmptyModalOpen,
+    t,
+    language,
+    formatCurrency,
+    formatQty,
+    toBnNum,
   } = useApp();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,77 +64,84 @@ export const CurrentStockView: React.FC = () => {
     setEditingProduct(null);
   };
 
+  const pcsUnit = language === 'bn' ? 'টি' : 'pcs';
+
   return (
     <div className="space-y-4">
       {/* Top Header */}
       <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-black text-slate-900 tracking-tight">Cylinder Inventory & Stock Matrix</h1>
+          <h1 className="text-lg font-black text-slate-900 tracking-tight">{t('stock.matrix_title')}</h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Real-time tracking of filled cylinders, empty cylinders in godown, customer holdings, and stock valuations
+            {t('stock.matrix_subtitle')}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <button
-            onClick={() => setIsAdjustStockModalOpen(true)}
-            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold shadow-xs transition-colors flex items-center gap-1.5"
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5" />
-            <span>Stock Adjustment</span>
-          </button>
-          <button
-            onClick={() => setIsReceiveEmptyModalOpen(true)}
-            className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded font-bold shadow-xs transition-colors flex items-center gap-1.5"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Receive Empty Cylinders</span>
-          </button>
+          <RoleGate action="adjust_stock">
+            <button
+              onClick={() => setIsAdjustStockModalOpen(true)}
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold shadow-xs transition-colors flex items-center gap-1.5"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span>{t('lpg.stock_adjust')}</span>
+            </button>
+          </RoleGate>
+
+          <RoleGate action="receive_empty">
+            <button
+              onClick={() => setIsReceiveEmptyModalOpen(true)}
+              className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded font-bold shadow-xs transition-colors flex items-center gap-1.5"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>{t('lpg.receive_empty')}</span>
+            </button>
+          </RoleGate>
         </div>
       </div>
 
       {/* 6 High-Level Inventory Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 text-xs">
         <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
-          <span className="text-slate-500 block text-[11px] font-semibold">Total Cylinders</span>
-          <span className="text-lg font-extrabold text-slate-900 mt-0.5 block">{formatNumber(totalAllCylinders)} pcs</span>
-          <span className="text-[10px] text-slate-400">Total company assets</span>
+          <span className="text-slate-500 block text-[11px] font-semibold">{t('lpg.total_cylinders')}</span>
+          <span className="text-lg font-extrabold text-slate-900 mt-0.5 block">{formatQty(totalAllCylinders)} {pcsUnit}</span>
+          <span className="text-[10px] text-slate-400">{t('stock.all_company_assets')}</span>
         </div>
 
         <div className="bg-white p-3 rounded-lg border border-orange-200 bg-orange-50/20 shadow-2xs">
           <span className="text-orange-700 block text-[11px] font-bold flex items-center gap-1">
-            <Flame className="w-3.5 h-3.5 text-orange-600" /> Full in Godown
+            <Flame className="w-3.5 h-3.5 text-orange-600" /> {t('stock.full_godown')}
           </span>
-          <span className="text-lg font-extrabold text-orange-600 mt-0.5 block">{formatNumber(totalFull)} pcs</span>
-          <span className="text-[10px] text-slate-500">Ready for sale</span>
+          <span className="text-lg font-extrabold text-orange-600 mt-0.5 block">{formatQty(totalFull)} {pcsUnit}</span>
+          <span className="text-[10px] text-slate-500">{t('stock.ready_for_sale')}</span>
         </div>
 
         <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
           <span className="text-slate-600 block text-[11px] font-semibold flex items-center gap-1">
-            <RotateCcw className="w-3.5 h-3.5 text-slate-500" /> Empty in Godown
+            <RotateCcw className="w-3.5 h-3.5 text-slate-500" /> {t('stock.empty_godown')}
           </span>
-          <span className="text-lg font-extrabold text-slate-800 mt-0.5 block">{formatNumber(totalEmpty)} pcs</span>
-          <span className="text-[10px] text-slate-400">For refilling</span>
+          <span className="text-lg font-extrabold text-slate-800 mt-0.5 block">{formatQty(totalEmpty)} {pcsUnit}</span>
+          <span className="text-[10px] text-slate-400">{t('stock.for_refilling')}</span>
         </div>
 
         <div className="bg-white p-3 rounded-lg border border-purple-200 bg-purple-50/20 shadow-2xs">
-          <span className="text-purple-800 block text-[11px] font-bold">With Customers</span>
-          <span className="text-lg font-extrabold text-purple-700 mt-0.5 block">{formatNumber(totalCustomerHeld)} pcs</span>
-          <span className="text-[10px] text-purple-600">Receivable dues</span>
+          <span className="text-purple-800 block text-[11px] font-bold">{t('stock.cust_held')}</span>
+          <span className="text-lg font-extrabold text-purple-700 mt-0.5 block">{formatQty(totalCustomerHeld)} {pcsUnit}</span>
+          <span className="text-[10px] text-purple-600">{t('stock.receivable_dues')}</span>
         </div>
 
         <div className="bg-white p-3 rounded-lg border border-blue-200 bg-blue-50/20 shadow-2xs">
-          <span className="text-blue-800 block text-[11px] font-bold">With Suppliers</span>
-          <span className="text-lg font-extrabold text-blue-700 mt-0.5 block">{formatNumber(totalSupplierHeld)} pcs</span>
-          <span className="text-[10px] text-blue-600">At refinery depots</span>
+          <span className="text-blue-800 block text-[11px] font-bold">{t('stock.with_suppliers')}</span>
+          <span className="text-lg font-extrabold text-blue-700 mt-0.5 block">{formatQty(totalSupplierHeld)} {pcsUnit}</span>
+          <span className="text-[10px] text-blue-600">{t('stock.at_depots')}</span>
         </div>
 
         <div className="bg-white p-3 rounded-lg border border-rose-200 bg-rose-50/20 shadow-2xs">
           <span className="text-rose-800 block text-[11px] font-bold flex items-center gap-1">
-            <AlertOctagon className="w-3.5 h-3.5 text-rose-600" /> Damaged / Lost
+            <AlertOctagon className="w-3.5 h-3.5 text-rose-600" /> {t('stock.damaged_lost')}
           </span>
-          <span className="text-lg font-extrabold text-rose-700 mt-0.5 block">{formatNumber(totalDamaged)} pcs</span>
-          <span className="text-[10px] text-rose-500">Requires scrap/repair</span>
+          <span className="text-lg font-extrabold text-rose-700 mt-0.5 block">{formatQty(totalDamaged)} {pcsUnit}</span>
+          <span className="text-[10px] text-rose-500">{t('stock.requires_repair')}</span>
         </div>
       </div>
 
@@ -139,7 +152,7 @@ export const CurrentStockView: React.FC = () => {
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search product by brand, size (12 KG, 35 KG), SKU..."
+              placeholder={language === 'bn' ? 'ব্র্যান্ড, সাইজ (১২ কেজি, ৩৫ কেজি), কোড দিয়ে খুঁজুন...' : 'Search product by brand, size (12 KG, 35 KG), SKU...'}
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded font-medium text-slate-900 text-xs"
@@ -151,7 +164,7 @@ export const CurrentStockView: React.FC = () => {
             onChange={e => setBrandFilter(e.target.value)}
             className="px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded font-medium text-slate-700"
           >
-            <option value="ALL">All Brands ({brands.length})</option>
+            <option value="ALL">{language === 'bn' ? `সকল ব্র্যান্ড (${formatQty(brands.length)})` : `All Brands (${brands.length})`}</option>
             {brands.map(b => (
               <option key={b} value={b}>
                 {b}
@@ -161,7 +174,7 @@ export const CurrentStockView: React.FC = () => {
         </div>
 
         <div className="text-slate-600 font-bold">
-          Godown Stock Valuation (Gas Cost): <span className="text-emerald-700">{formatBDT(totalStockValue)}</span>
+          {t('stock.valuation')}: <span className="text-emerald-700">{formatCurrency(totalStockValue)}</span>
         </div>
       </div>
 
@@ -171,32 +184,31 @@ export const CurrentStockView: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
               <tr>
-                <th className="px-3 py-2.5">Brand & Spec</th>
-                <th className="px-2 py-2.5">SKU / Code</th>
-                <th className="px-2 py-2.5 text-center bg-orange-50/70 text-orange-950 font-black">Full in Godown</th>
-                <th className="px-2 py-2.5 text-center bg-slate-100 font-bold">Empty in Godown</th>
-                <th className="px-2 py-2.5 text-center text-purple-900">Cust. Held</th>
-                <th className="px-2 py-2.5 text-center text-blue-900">Depot Held</th>
-                <th className="px-2 py-2.5 text-center text-rose-700">Damaged</th>
-                <th className="px-2 py-2.5 text-center font-black">Total Pcs</th>
-                <th className="px-2 py-2.5 text-right">Cost (৳)</th>
-                <th className="px-2 py-2.5 text-right">Dealer (৳)</th>
-                <th className="px-2 py-2.5 text-right">Retail (৳)</th>
-                <th className="px-2 py-2.5 text-right">Full Value</th>
-                <th className="px-3 py-2.5">Status</th>
-                <th className="px-2 py-2.5 text-right">Action</th>
+                <th className="px-3 py-2.5">{t('stock.brand_spec')}</th>
+                <th className="px-2 py-2.5">{t('stock.sku_code')}</th>
+                <th className="px-2 py-2.5 text-center bg-orange-50/70 text-orange-950 font-black">{t('stock.full_godown')}</th>
+                <th className="px-2 py-2.5 text-center bg-slate-100 font-bold">{t('stock.empty_godown')}</th>
+                <th className="px-2 py-2.5 text-center text-purple-900">{t('stock.cust_held')}</th>
+                <th className="px-2 py-2.5 text-center text-blue-900">{t('stock.depot_held')}</th>
+                <th className="px-2 py-2.5 text-center text-rose-700">{t('stock.damaged')}</th>
+                <th className="px-2 py-2.5 text-center font-black">{t('stock.total_pcs')}</th>
+                <th className="px-2 py-2.5 text-right">{t('stock.cost_rate')}</th>
+                <th className="px-2 py-2.5 text-right">{t('stock.dealer_rate')}</th>
+                <th className="px-2 py-2.5 text-right">{t('stock.retail_rate')}</th>
+                <th className="px-2 py-2.5 text-right">{t('stock.full_value')}</th>
+                <th className="px-3 py-2.5">{t('common.status')}</th>
+                <th className="px-2 py-2.5 text-right">{t('common.action')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredProducts.map(p => {
-                const isCritical = p.fullStock <= p.minStockLevel;
                 const itemFullValue = p.fullStock * p.purchasePrice;
 
                 return (
                   <tr key={p.id} className="hover:bg-slate-50/80">
                     <td className="px-3 py-2.5">
                       <div className="font-bold text-slate-900">{p.brand}</div>
-                      <div className="text-[11px] text-slate-500 font-semibold">{p.size} ({p.category})</div>
+                      <div className="text-[11px] text-slate-500 font-semibold">{language === 'bn' ? toBnNum(p.size) : p.size} ({p.category})</div>
                     </td>
 
                     <td className="px-2 py-2.5 font-mono text-[11px] text-slate-500">
@@ -204,43 +216,43 @@ export const CurrentStockView: React.FC = () => {
                     </td>
 
                     <td className="px-2 py-2.5 text-center font-black text-orange-600 bg-orange-50/30 text-sm">
-                      {p.fullStock}
+                      {formatQty(p.fullStock)}
                     </td>
 
                     <td className="px-2 py-2.5 text-center font-bold text-slate-800 text-sm">
-                      {p.emptyStock}
+                      {formatQty(p.emptyStock)}
                     </td>
 
                     <td className="px-2 py-2.5 text-center font-bold text-purple-700">
-                      {p.customerHeldStock}
+                      {formatQty(p.customerHeldStock)}
                     </td>
 
                     <td className="px-2 py-2.5 text-center font-bold text-blue-700">
-                      {p.supplierHeldStock}
+                      {formatQty(p.supplierHeldStock)}
                     </td>
 
                     <td className="px-2 py-2.5 text-center font-bold text-rose-600">
-                      {p.damagedStock}
+                      {formatQty(p.damagedStock)}
                     </td>
 
                     <td className="px-2 py-2.5 text-center font-black text-slate-900">
-                      {p.totalCylinders}
+                      {formatQty(p.totalCylinders)}
                     </td>
 
                     <td className="px-2 py-2.5 text-right font-medium text-slate-600">
-                      {formatBDT(p.purchasePrice)}
+                      {formatCurrency(p.purchasePrice)}
                     </td>
 
                     <td className="px-2 py-2.5 text-right font-bold text-slate-800">
-                      {formatBDT(p.dealerPrice)}
+                      {formatCurrency(p.dealerPrice)}
                     </td>
 
                     <td className="px-2 py-2.5 text-right font-bold text-slate-900">
-                      {formatBDT(p.sellingPrice)}
+                      {formatCurrency(p.sellingPrice)}
                     </td>
 
                     <td className="px-2 py-2.5 text-right font-bold text-emerald-700">
-                      {formatBDT(itemFullValue)}
+                      {formatCurrency(itemFullValue)}
                     </td>
 
                     <td className="px-3 py-2.5 whitespace-nowrap">
@@ -248,13 +260,15 @@ export const CurrentStockView: React.FC = () => {
                     </td>
 
                     <td className="px-2 py-2.5 text-right">
-                      <button
-                        onClick={() => setEditingProduct(p)}
-                        className="p-1 rounded text-slate-500 hover:text-slate-900 hover:bg-slate-100"
-                        title="Edit Price & Min Threshold"
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                      </button>
+                      <RoleGate action="edit_product">
+                        <button
+                          onClick={() => setEditingProduct(p)}
+                          className="p-1 rounded text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                          title={t('stock.edit_prices')}
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+                      </RoleGate>
                     </td>
                   </tr>
                 );
@@ -271,9 +285,13 @@ export const CurrentStockView: React.FC = () => {
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div>
                 <h3 className="text-sm font-bold text-slate-900">
-                  Edit Prices - {editingProduct.brand} {editingProduct.size}
+                  {t('stock.edit_prices')} - {editingProduct.brand} {editingProduct.size}
                 </h3>
-                <p className="text-slate-500">Configure cost price, wholesale rate, and retail selling rate</p>
+                <p className="text-slate-500">
+                  {language === 'bn'
+                    ? 'ক্রয় দর, পাইকারি দর এবং খুচরা বিক্রয় মূল্য কনফিগার করুন'
+                    : 'Configure cost price, wholesale rate, and retail selling rate'}
+                </p>
               </div>
               <button onClick={() => setEditingProduct(null)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-4 h-4" />
@@ -282,7 +300,9 @@ export const CurrentStockView: React.FC = () => {
 
             <form onSubmit={handleSaveProduct} className="space-y-3">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Cost / Purchase Price (৳)</label>
+                <label className="block font-bold text-slate-700 mb-1">
+                  {language === 'bn' ? 'ক্রয় / খরচ দর (৳)' : 'Cost / Purchase Price (৳)'}
+                </label>
                 <input
                   type="number"
                   value={editingProduct.purchasePrice}
@@ -292,7 +312,9 @@ export const CurrentStockView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Dealer / Wholesale Price (৳)</label>
+                <label className="block font-bold text-slate-700 mb-1">
+                  {language === 'bn' ? 'ডিলার / পাইকারি দর (৳)' : 'Dealer / Wholesale Price (৳)'}
+                </label>
                 <input
                   type="number"
                   value={editingProduct.dealerPrice}
@@ -302,7 +324,9 @@ export const CurrentStockView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Retail Selling Price (৳)</label>
+                <label className="block font-bold text-slate-700 mb-1">
+                  {language === 'bn' ? 'খুচরা বিক্রয় দর (৳)' : 'Retail Selling Price (৳)'}
+                </label>
                 <input
                   type="number"
                   value={editingProduct.sellingPrice}
@@ -312,7 +336,9 @@ export const CurrentStockView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Low Stock Warning Threshold (Units)</label>
+                <label className="block font-bold text-slate-700 mb-1">
+                  {language === 'bn' ? 'সর্বনিম্ন মজুদ সতর্কতা (পিস)' : 'Low Stock Warning Threshold (Units)'}
+                </label>
                 <input
                   type="number"
                   value={editingProduct.minStockLevel}
@@ -327,13 +353,13 @@ export const CurrentStockView: React.FC = () => {
                   onClick={() => setEditingProduct(null)}
                   className="px-3 py-1.5 bg-slate-100 rounded text-slate-700 font-semibold"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded font-bold"
                 >
-                  Update Product
+                  {t('stock.update_product')}
                 </button>
               </div>
             </form>

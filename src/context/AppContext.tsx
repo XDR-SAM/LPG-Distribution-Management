@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Language } from '../utils/translations';
+import { useLanguage } from './LanguageContext';
 import { 
   User, 
   Brand, 
@@ -54,7 +56,18 @@ interface AppNotification {
 }
 
 interface AppContextType {
+  // Language & i18n
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  toggleLanguage: () => void;
+  t: (key: string, fallback?: string) => string;
+  toBnNum: (input: number | string | null | undefined) => string;
+  formatCurrency: (amount: number | null | undefined, forceBanglaDigits?: boolean) => string;
+  formatQty: (num: number | null | undefined, forceBanglaDigits?: boolean) => string;
+  formatDisplayDate: (dateStr: string | Date | null | undefined) => string;
+
   currentUser: User | null;
+  setCurrentUser: (user: User | null) => void;
   login: (email: string, pass: string) => boolean;
   logout: () => void;
   activeView: string;
@@ -64,6 +77,7 @@ interface AppContextType {
   settings: AppSettings;
   updateSettings: (newSettings: Partial<AppSettings>) => void;
   users: User[];
+  setUsers: (users: User[]) => void;
   brands: Brand[];
   products: CylinderProduct[];
   customers: Customer[];
@@ -128,6 +142,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 const LOCAL_STORAGE_KEY = 'LPG_MANAGER_BD_STATE_V1';
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const lang = useLanguage();
   // Load initial state from localStorage or use mock
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(INITIAL_USERS[0]); // Start logged in as Admin for instant demo access, or allow logout
@@ -1021,6 +1036,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     <AppContext.Provider
       value={{
         currentUser,
+        setCurrentUser,
         login,
         logout,
         activeView,
@@ -1028,6 +1044,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         settings,
         updateSettings,
         users,
+        setUsers,
         brands,
         products,
         customers,
@@ -1081,12 +1098,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         resetAllData,
         exportBackupJSON,
         importBackupJSON,
+        language: lang.language,
+        setLanguage: lang.setLanguage,
+        toggleLanguage: lang.toggleLanguage,
+        t: lang.t,
+        toBnNum: lang.toBnNum,
+        formatCurrency: lang.formatCurrency,
+        formatQty: lang.formatQty,
+        formatDisplayDate: lang.formatDisplayDate,
       }}
     >
       {children}
     </AppContext.Provider>
   );
 };
+
+export { useLanguage } from './LanguageContext';
 
 export const useApp = () => {
   const context = useContext(AppContext);

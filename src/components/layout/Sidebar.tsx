@@ -10,7 +10,6 @@ import {
   ShoppingBag,
   Boxes,
   Activity,
-  SlidersHorizontal,
   AlertOctagon,
   Users,
   Building2,
@@ -27,8 +26,13 @@ import {
   ChevronRight,
   PackageCheck,
   Flame,
-  UserCheck
+  UserCheck,
+  Database,
+  RefreshCw,
+  Globe
 } from 'lucide-react';
+import { canAccessView, getRoleConfig } from '../../utils/rbac';
+import { LanguageToggle } from '../common/LanguageToggle';
 
 interface SidebarProps {
   collapsed?: boolean;
@@ -43,7 +47,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   mobileOpen = false,
   setMobileOpen = (_o?: boolean) => {},
 }) => {
-  const { activeView, setActiveView } = useApp();
+  const { activeView, setActiveView, currentUser, t, language } = useApp();
+  const currentRole = currentUser?.role || 'admin';
+  const roleConfig = getRoleConfig(currentRole);
 
   // Track expanded submenus
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -52,7 +58,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     customers: true,
     accounts: true,
     suppliers: false,
-    delivery: false,
     reports: false,
   });
 
@@ -66,6 +71,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const isNavActive = (view: string) => activeView === view;
+
+  // RBAC Filter checks
+  const canView = (view: string) => canAccessView(currentRole, view);
+
+  // Check section visibility
+  const showSalesSection = canView('sales_new') || canView('sales_list') || canView('sales_challans') || canView('sales_returns');
+  const showPurchasesSection = canView('purchase_new') || canView('purchase_list');
+  const showInventorySection = canView('inventory_stock') || canView('inventory_movements') || canView('inventory_damaged');
+  const showCustomersSection = canView('customer_list') || canView('customer_cylinder_due') || canView('customer_ledger');
+  const showSuppliersSection = canView('supplier_list') || canView('supplier_ledger');
+  const showAccountsSection = canView('accounts_cashbook') || canView('accounts_receive') || canView('accounts_pay') || canView('accounts_expenses') || canView('accounts_summary');
+  const showReportsSection = canView('report_daily') || canView('report_cylinder_audit');
 
   return (
     <>
@@ -106,7 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Scrollable Navigation Items */}
         <div className="flex-1 overflow-y-auto py-3 px-2 space-y-1 text-xs select-none">
-          {/* Dashboard */}
+          {/* Dashboard (All roles) */}
           <button
             onClick={() => navigateTo('dashboard')}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-semibold transition-colors ${
@@ -114,492 +131,561 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 ? 'bg-orange-600 text-white shadow-xs'
                 : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
             }`}
-            title="Dashboard"
+            title={t('nav.dashboard')}
           >
             <LayoutDashboard className="w-4 h-4 shrink-0" />
-            {!collapsed && <span className="truncate">Dashboard</span>}
+            {!collapsed && <span className="truncate">{t('nav.dashboard')}</span>}
           </button>
 
           {/* Sales Section */}
-          <div className="pt-1">
-            {!collapsed ? (
-              <button
-                onClick={() => toggleSection('sales')}
-                className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
-              >
-                <div className="flex items-center gap-2">
-                  <ShoppingCart className="w-3.5 h-3.5 text-orange-400" />
-                  <span>Sales & Orders</span>
+          {showSalesSection && (
+            <div className="pt-1">
+              {!collapsed ? (
+                <button
+                  onClick={() => toggleSection('sales')}
+                  className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
+                >
+                  <div className="flex items-center gap-2">
+                    <ShoppingCart className="w-3.5 h-3.5 text-orange-400" />
+                    <span>{t('nav.sales_section')}</span>
+                  </div>
+                  {openSections.sales ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                </button>
+              ) : (
+                <div className="h-px bg-slate-800 my-2" />
+              )}
+
+              {(openSections.sales || collapsed) && (
+                <div className="space-y-0.5 mt-0.5">
+                  {canView('sales_new') && (
+                    <button
+                      onClick={() => navigateTo('sales_new')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('sales_new') || isNavActive('sales_pos')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.new_sale')}
+                    >
+                      <PlusCircle className="w-4 h-4 shrink-0 text-emerald-400" />
+                      {!collapsed && <span>{t('nav.new_sale')}</span>}
+                    </button>
+                  )}
+
+                  {canView('sales_list') && (
+                    <button
+                      onClick={() => navigateTo('sales_list')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('sales_list')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.sales_list')}
+                    >
+                      <ListOrdered className="w-4 h-4 shrink-0" />
+                      {!collapsed && <span>{t('nav.sales_list')}</span>}
+                    </button>
+                  )}
+
+                  {canView('sales_challans') && (
+                    <button
+                      onClick={() => navigateTo('sales_challans')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('sales_challans')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.challans')}
+                    >
+                      <Truck className="w-4 h-4 shrink-0 text-amber-400" />
+                      {!collapsed && <span>{t('nav.challans')}</span>}
+                    </button>
+                  )}
+
+                  {canView('sales_returns') && (
+                    <button
+                      onClick={() => navigateTo('sales_returns')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('sales_returns')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.returns')}
+                    >
+                      <RotateCcw className="w-4 h-4 shrink-0 text-rose-400" />
+                      {!collapsed && <span>{t('nav.returns')}</span>}
+                    </button>
+                  )}
                 </div>
-                {openSections.sales ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-              </button>
-            ) : (
-              <div className="h-px bg-slate-800 my-2" />
-            )}
-
-            {(openSections.sales || collapsed) && (
-              <div className="space-y-0.5 mt-0.5">
-                <button
-                  onClick={() => navigateTo('sales_new')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('sales_new')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="New Sale (POS)"
-                >
-                  <PlusCircle className="w-4 h-4 shrink-0 text-emerald-400" />
-                  {!collapsed && <span>New Sale (POS)</span>}
-                </button>
-
-                <button
-                  onClick={() => navigateTo('sales_list')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('sales_list')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="Sales List"
-                >
-                  <ListOrdered className="w-4 h-4 shrink-0" />
-                  {!collapsed && <span>Sales List</span>}
-                </button>
-
-                <button
-                  onClick={() => navigateTo('sales_challan')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('sales_challan')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="Delivery Challans"
-                >
-                  <Truck className="w-4 h-4 shrink-0 text-amber-400" />
-                  {!collapsed && <span>Delivery Challan</span>}
-                </button>
-
-                <button
-                  onClick={() => navigateTo('sales_returns')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('sales_returns')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="Sale Returns"
-                >
-                  <RotateCcw className="w-4 h-4 shrink-0 text-rose-400" />
-                  {!collapsed && <span>Sale Returns</span>}
-                </button>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {/* Purchases Section */}
-          <div className="pt-1">
-            {!collapsed && (
-              <button
-                onClick={() => toggleSection('purchases')}
-                className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
-              >
-                <div className="flex items-center gap-2">
-                  <ShoppingBag className="w-3.5 h-3.5 text-blue-400" />
-                  <span>Purchases</span>
-                </div>
-                {openSections.purchases ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-              </button>
-            )}
+          {showPurchasesSection && (
+            <div className="pt-1">
+              {!collapsed && (
+                <button
+                  onClick={() => toggleSection('purchases')}
+                  className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
+                >
+                  <div className="flex items-center gap-2">
+                    <ShoppingBag className="w-3.5 h-3.5 text-blue-400" />
+                    <span>{t('nav.purchases_section')}</span>
+                  </div>
+                  {openSections.purchases ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                </button>
+              )}
 
-            {(openSections.purchases || collapsed) && (
-              <div className="space-y-0.5 mt-0.5">
-                <button
-                  onClick={() => navigateTo('purchase_new')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('purchase_new')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="New Purchase"
-                >
-                  <PlusCircle className="w-4 h-4 shrink-0 text-blue-400" />
-                  {!collapsed && <span>New Purchase</span>}
-                </button>
-                <button
-                  onClick={() => navigateTo('purchase_list')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('purchase_list')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="Purchase List"
-                >
-                  <ListOrdered className="w-4 h-4 shrink-0" />
-                  {!collapsed && <span>Purchase List</span>}
-                </button>
-              </div>
-            )}
-          </div>
+              {(openSections.purchases || collapsed) && (
+                <div className="space-y-0.5 mt-0.5">
+                  {canView('purchase_new') && (
+                    <button
+                      onClick={() => navigateTo('purchase_new')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('purchase_new')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.new_purchase')}
+                    >
+                      <PlusCircle className="w-4 h-4 shrink-0 text-blue-400" />
+                      {!collapsed && <span>{t('nav.new_purchase')}</span>}
+                    </button>
+                  )}
+                  {canView('purchase_list') && (
+                    <button
+                      onClick={() => navigateTo('purchase_list')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('purchase_list')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.purchase_list')}
+                    >
+                      <ListOrdered className="w-4 h-4 shrink-0" />
+                      {!collapsed && <span>{t('nav.purchase_list')}</span>}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Cylinders & Inventory */}
-          <div className="pt-1">
-            {!collapsed && (
-              <button
-                onClick={() => toggleSection('inventory')}
-                className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
-              >
-                <div className="flex items-center gap-2">
-                  <Boxes className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Cylinders & Stock</span>
+          {showInventorySection && (
+            <div className="pt-1">
+              {!collapsed && (
+                <button
+                  onClick={() => toggleSection('inventory')}
+                  className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
+                >
+                  <div className="flex items-center gap-2">
+                    <Boxes className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>{t('nav.inventory_section')}</span>
+                  </div>
+                  {openSections.inventory ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                </button>
+              )}
+
+              {(openSections.inventory || collapsed) && (
+                <div className="space-y-0.5 mt-0.5">
+                  {canView('inventory_stock') && (
+                    <button
+                      onClick={() => navigateTo('inventory_stock')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('inventory_stock')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.current_stock')}
+                    >
+                      <PackageCheck className="w-4 h-4 shrink-0 text-emerald-400" />
+                      {!collapsed && <span>{t('nav.current_stock')}</span>}
+                    </button>
+                  )}
+
+                  {canView('inventory_movements') && (
+                    <button
+                      onClick={() => navigateTo('inventory_movements')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('inventory_movements')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.stock_movements')}
+                    >
+                      <Activity className="w-4 h-4 shrink-0 text-cyan-400" />
+                      {!collapsed && <span>{t('nav.stock_movements')}</span>}
+                    </button>
+                  )}
+
+                  {canView('inventory_damaged') && (
+                    <button
+                      onClick={() => navigateTo('inventory_damaged')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('inventory_damaged')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.damaged')}
+                    >
+                      <AlertOctagon className="w-4 h-4 shrink-0 text-rose-400" />
+                      {!collapsed && <span>{t('nav.damaged')}</span>}
+                    </button>
+                  )}
                 </div>
-                {openSections.inventory ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-              </button>
-            )}
-
-            {(openSections.inventory || collapsed) && (
-              <div className="space-y-0.5 mt-0.5">
-                <button
-                  onClick={() => navigateTo('inventory_stock')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('inventory_stock')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="Current Cylinder Stock"
-                >
-                  <PackageCheck className="w-4 h-4 shrink-0 text-emerald-400" />
-                  {!collapsed && <span>Current Stock (Full/Empty)</span>}
-                </button>
-
-                <button
-                  onClick={() => navigateTo('inventory_movements')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('inventory_movements')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="Stock Movement Ledger"
-                >
-                  <Activity className="w-4 h-4 shrink-0 text-cyan-400" />
-                  {!collapsed && <span>Stock Movements</span>}
-                </button>
-
-                <button
-                  onClick={() => navigateTo('inventory_adjustment')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('inventory_adjustment')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="Cylinder Adjustment"
-                >
-                  <SlidersHorizontal className="w-4 h-4 shrink-0 text-amber-400" />
-                  {!collapsed && <span>Stock Adjustment</span>}
-                </button>
-
-                <button
-                  onClick={() => navigateTo('inventory_damaged')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('inventory_damaged')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="Damaged / Lost Cylinders"
-                >
-                  <AlertOctagon className="w-4 h-4 shrink-0 text-rose-400" />
-                  {!collapsed && <span>Damaged & Lost</span>}
-                </button>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {/* Customers & Dealers */}
-          <div className="pt-1">
-            {!collapsed && (
-              <button
-                onClick={() => toggleSection('customers')}
-                className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
-              >
-                <div className="flex items-center gap-2">
-                  <Users className="w-3.5 h-3.5 text-purple-400" />
-                  <span>Customers / Dealers</span>
+          {showCustomersSection && (
+            <div className="pt-1">
+              {!collapsed && (
+                <button
+                  onClick={() => toggleSection('customers')}
+                  className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
+                >
+                  <div className="flex items-center gap-2">
+                    <Users className="w-3.5 h-3.5 text-purple-400" />
+                    <span>{t('nav.customers_section')}</span>
+                  </div>
+                  {openSections.customers ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                </button>
+              )}
+
+              {(openSections.customers || collapsed) && (
+                <div className="space-y-0.5 mt-0.5">
+                  {canView('customer_list') && (
+                    <button
+                      onClick={() => navigateTo('customer_list')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('customer_list')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.customer_list')}
+                    >
+                      <Users className="w-4 h-4 shrink-0" />
+                      {!collapsed && <span>{t('nav.customer_list')}</span>}
+                    </button>
+                  )}
+
+                  {canView('customer_cylinder_due') && (
+                    <button
+                      onClick={() => navigateTo('customer_cylinder_due')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('customer_cylinder_due')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.cylinder_due')}
+                    >
+                      <Flame className="w-4 h-4 shrink-0 text-orange-400" />
+                      {!collapsed && <span>{t('nav.cylinder_due')}</span>}
+                    </button>
+                  )}
+
+                  {canView('customer_ledger') && (
+                    <button
+                      onClick={() => navigateTo('customer_ledger')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('customer_ledger')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.customer_ledger')}
+                    >
+                      <FileText className="w-4 h-4 shrink-0 text-blue-400" />
+                      {!collapsed && <span>{t('nav.customer_ledger')}</span>}
+                    </button>
+                  )}
                 </div>
-                {openSections.customers ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-              </button>
-            )}
-
-            {(openSections.customers || collapsed) && (
-              <div className="space-y-0.5 mt-0.5">
-                <button
-                  onClick={() => navigateTo('customer_list')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('customer_list')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="Customer List"
-                >
-                  <Users className="w-4 h-4 shrink-0" />
-                  {!collapsed && <span>Customer List</span>}
-                </button>
-
-                <button
-                  onClick={() => navigateTo('customer_cylinder_due')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('customer_cylinder_due')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="Customer Cylinder Due"
-                >
-                  <Flame className="w-4 h-4 shrink-0 text-orange-400" />
-                  {!collapsed && <span>Cylinder Due Account</span>}
-                </button>
-
-                <button
-                  onClick={() => navigateTo('customer_ledger')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('customer_ledger')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="Customer Ledger Statement"
-                >
-                  <FileText className="w-4 h-4 shrink-0 text-blue-400" />
-                  {!collapsed && <span>Customer Ledger</span>}
-                </button>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {/* Suppliers */}
-          <div className="pt-1">
-            {!collapsed && (
-              <button
-                onClick={() => toggleSection('suppliers')}
-                className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
-              >
-                <div className="flex items-center gap-2">
-                  <Building2 className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>Suppliers</span>
+          {showSuppliersSection && (
+            <div className="pt-1">
+              {!collapsed && (
+                <button
+                  onClick={() => toggleSection('suppliers')}
+                  className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
+                >
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>{t('nav.suppliers_section')}</span>
+                  </div>
+                  {openSections.suppliers ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                </button>
+              )}
+
+              {(openSections.suppliers || collapsed) && (
+                <div className="space-y-0.5 mt-0.5">
+                  {canView('supplier_list') && (
+                    <button
+                      onClick={() => navigateTo('supplier_list')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('supplier_list')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.supplier_list')}
+                    >
+                      <Building2 className="w-4 h-4 shrink-0" />
+                      {!collapsed && <span>{t('nav.supplier_list')}</span>}
+                    </button>
+                  )}
+
+                  {canView('supplier_ledger') && (
+                    <button
+                      onClick={() => navigateTo('supplier_ledger')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('supplier_ledger')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.supplier_ledger')}
+                    >
+                      <FileText className="w-4 h-4 shrink-0" />
+                      {!collapsed && <span>{t('nav.supplier_ledger')}</span>}
+                    </button>
+                  )}
                 </div>
-                {openSections.suppliers ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-              </button>
-            )}
-
-            {(openSections.suppliers || collapsed) && (
-              <div className="space-y-0.5 mt-0.5">
-                <button
-                  onClick={() => navigateTo('supplier_list')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('supplier_list')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="Supplier List"
-                >
-                  <Building2 className="w-4 h-4 shrink-0" />
-                  {!collapsed && <span>Supplier List</span>}
-                </button>
-
-                <button
-                  onClick={() => navigateTo('supplier_ledger')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('supplier_ledger')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="Supplier Ledger & Cylinders"
-                >
-                  <FileText className="w-4 h-4 shrink-0" />
-                  {!collapsed && <span>Supplier Ledger</span>}
-                </button>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {/* Accounts & Cashbook */}
-          <div className="pt-1">
-            {!collapsed && (
-              <button
-                onClick={() => toggleSection('accounts')}
-                className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
-              >
-                <div className="flex items-center gap-2">
-                  <Wallet className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Accounts & Cash</span>
+          {showAccountsSection && (
+            <div className="pt-1">
+              {!collapsed && (
+                <button
+                  onClick={() => toggleSection('accounts')}
+                  className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
+                >
+                  <div className="flex items-center gap-2">
+                    <Wallet className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>{t('nav.accounts_section')}</span>
+                  </div>
+                  {openSections.accounts ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                </button>
+              )}
+
+              {(openSections.accounts || collapsed) && (
+                <div className="space-y-0.5 mt-0.5">
+                  {canView('accounts_cashbook') && (
+                    <button
+                      onClick={() => navigateTo('accounts_cashbook')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('accounts_cashbook')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.cashbook')}
+                    >
+                      <Wallet className="w-4 h-4 shrink-0 text-emerald-400" />
+                      {!collapsed && <span>{t('nav.cashbook')}</span>}
+                    </button>
+                  )}
+
+                  {canView('accounts_receive') && (
+                    <button
+                      onClick={() => navigateTo('accounts_receive')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('accounts_receive')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.money_receipt')}
+                    >
+                      <ArrowDownLeft className="w-4 h-4 shrink-0 text-emerald-400" />
+                      {!collapsed && <span>{t('nav.money_receipt')}</span>}
+                    </button>
+                  )}
+
+                  {canView('accounts_pay') && (
+                    <button
+                      onClick={() => navigateTo('accounts_pay')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('accounts_pay')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.supplier_payment')}
+                    >
+                      <ArrowUpRight className="w-4 h-4 shrink-0 text-rose-400" />
+                      {!collapsed && <span>{t('nav.supplier_payment')}</span>}
+                    </button>
+                  )}
+
+                  {canView('accounts_expenses') && (
+                    <button
+                      onClick={() => navigateTo('accounts_expenses')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('accounts_expenses')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.expenses')}
+                    >
+                      <Receipt className="w-4 h-4 shrink-0 text-amber-400" />
+                      {!collapsed && <span>{t('nav.expenses')}</span>}
+                    </button>
+                  )}
+
+                  {canView('accounts_summary') && (
+                    <button
+                      onClick={() => navigateTo('accounts_summary')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('accounts_summary')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.financial_summary')}
+                    >
+                      <BarChart3 className="w-4 h-4 shrink-0 text-cyan-400" />
+                      {!collapsed && <span>{t('nav.financial_summary')}</span>}
+                    </button>
+                  )}
                 </div>
-                {openSections.accounts ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-              </button>
-            )}
-
-            {(openSections.accounts || collapsed) && (
-              <div className="space-y-0.5 mt-0.5">
-                <button
-                  onClick={() => navigateTo('accounts_cashbook')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('accounts_cashbook')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="Cashbook & Bank"
-                >
-                  <Wallet className="w-4 h-4 shrink-0 text-emerald-400" />
-                  {!collapsed && <span>Cashbook & Balances</span>}
-                </button>
-
-                <button
-                  onClick={() => navigateTo('accounts_receive')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('accounts_receive')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="Receive Payment"
-                >
-                  <ArrowDownLeft className="w-4 h-4 shrink-0 text-emerald-400" />
-                  {!collapsed && <span>Receive Payment</span>}
-                </button>
-
-                <button
-                  onClick={() => navigateTo('accounts_pay')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('accounts_pay')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="Supplier Payment"
-                >
-                  <ArrowUpRight className="w-4 h-4 shrink-0 text-rose-400" />
-                  {!collapsed && <span>Make Payment</span>}
-                </button>
-
-                <button
-                  onClick={() => navigateTo('accounts_expenses')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('accounts_expenses')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="Expenses"
-                >
-                  <Receipt className="w-4 h-4 shrink-0 text-amber-400" />
-                  {!collapsed && <span>Expenses</span>}
-                </button>
-
-                <button
-                  onClick={() => navigateTo('accounts_summary')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                    isNavActive('accounts_summary')
-                      ? 'bg-orange-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title="Profit & Loss Statement"
-                >
-                  <BarChart3 className="w-4 h-4 shrink-0 text-cyan-400" />
-                  {!collapsed && <span>Profit & Loss / Balance</span>}
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Delivery */}
-          <div className="pt-1">
-            <button
-              onClick={() => navigateTo('delivery_list')}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                isNavActive('delivery_list')
-                  ? 'bg-orange-600 text-white'
-                  : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-              }`}
-              title="Delivery & Transport"
-            >
-              <Truck className="w-4 h-4 shrink-0 text-amber-400" />
-              {!collapsed && <span>Delivery & Transport</span>}
-            </button>
-          </div>
+              )}
+            </div>
+          )}
 
           {/* Reports Center */}
-          <div className="pt-1">
-            <button
-              onClick={() => navigateTo('reports_center')}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                isNavActive('reports_center')
-                  ? 'bg-orange-600 text-white'
-                  : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-              }`}
-              title="Reports Center"
-            >
-              <BarChart3 className="w-4 h-4 shrink-0 text-indigo-400" />
-              {!collapsed && <span className="font-semibold">Reports Center</span>}
-            </button>
-          </div>
+          {showReportsSection && (
+            <div className="pt-1">
+              <button
+                onClick={() => navigateTo('report_daily')}
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                  isNavActive('report_daily') || isNavActive('report_cylinder_audit')
+                    ? 'bg-orange-600 text-white'
+                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                }`}
+                title={t('nav.reports_section')}
+              >
+                <BarChart3 className="w-4 h-4 shrink-0 text-indigo-400" />
+                {!collapsed && <span className="font-semibold">{t('nav.reports_section')}</span>}
+              </button>
+            </div>
+          )}
 
-          {/* Audit Log */}
-          <div className="pt-1">
-            <button
-              onClick={() => navigateTo('audit_log')}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                isNavActive('audit_log')
-                  ? 'bg-orange-600 text-white'
-                  : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-              }`}
-              title="System Audit Log"
-            >
-              <ClipboardList className="w-4 h-4 shrink-0 text-slate-400" />
-              {!collapsed && <span>Audit Log</span>}
-            </button>
-          </div>
+          {/* Audit Log (Admin / Manager) */}
+          {canView('audit_logs') && (
+            <div className="pt-1">
+              <button
+                onClick={() => navigateTo('audit_logs')}
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                  isNavActive('audit_logs')
+                    ? 'bg-orange-600 text-white'
+                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                }`}
+                title="System Audit Log"
+              >
+                <ClipboardList className="w-4 h-4 shrink-0 text-slate-400" />
+                {!collapsed && <span>System Audit Log</span>}
+              </button>
+            </div>
+          )}
 
-          {/* Users & Roles */}
-          <div className="pt-1">
-            <button
-              onClick={() => navigateTo('users_roles')}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                isNavActive('users_roles')
-                  ? 'bg-orange-600 text-white'
-                  : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-              }`}
-              title="Users & Roles"
-            >
-              <UserCheck className="w-4 h-4 shrink-0 text-slate-400" />
-              {!collapsed && <span>Users & Permissions</span>}
-            </button>
-          </div>
+          {/* Users & RBAC Permissions (Admin & Manager) */}
+          {canView('users_roles') && (
+            <div className="pt-1">
+              <button
+                onClick={() => navigateTo('users_roles')}
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                  isNavActive('users_roles')
+                    ? 'bg-orange-600 text-white'
+                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                }`}
+                title={t('nav.users_roles')}
+              >
+                <UserCheck className="w-4 h-4 shrink-0 text-emerald-400" />
+                {!collapsed && <span>{t('nav.users_roles')}</span>}
+              </button>
+            </div>
+          )}
+
+          {/* Supabase Database Integration (Admin) */}
+          {canView('supabase_sync') && (
+            <div className="pt-1">
+              <button
+                onClick={() => navigateTo('supabase_sync')}
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                  isNavActive('supabase_sync')
+                    ? 'bg-emerald-600 text-white'
+                    : 'text-emerald-300 hover:bg-slate-800 hover:text-white'
+                }`}
+                title={t('nav.supabase_database')}
+              >
+                <Database className="w-4 h-4 shrink-0 text-emerald-400" />
+                {!collapsed && <span className="font-bold">{t('nav.supabase_database')}</span>}
+              </button>
+            </div>
+          )}
 
           {/* Settings & BERC */}
-          <div className="pt-1 pb-4">
-            <button
-              onClick={() => navigateTo('settings')}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                isNavActive('settings')
-                  ? 'bg-orange-600 text-white'
-                  : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-              }`}
-              title="Settings & Mushak 6.3"
-            >
-              <Settings className="w-4 h-4 shrink-0 text-slate-400" />
-              {!collapsed && <span>Settings & BERC</span>}
-            </button>
-          </div>
+          {canView('settings') && (
+            <div className="pt-1 pb-4">
+              <button
+                onClick={() => navigateTo('settings')}
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                  isNavActive('settings')
+                    ? 'bg-orange-600 text-white'
+                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                }`}
+                title={t('nav.settings')}
+              >
+                <Settings className="w-4 h-4 shrink-0 text-slate-400" />
+                {!collapsed && <span>{t('nav.settings')}</span>}
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* User Footer */}
-        <div className="p-3 border-t border-slate-800/80 bg-slate-950/60 shrink-0">
+        {/* User Profile & Language Footer */}
+        <div className="p-3 border-t border-slate-800/80 bg-slate-950/70 shrink-0 space-y-2">
+          {!collapsed && (
+            <div className="flex items-center justify-between px-1 py-1 text-slate-400 text-[11px]">
+              <span className="flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-orange-400" />
+                <span>{language === 'bn' ? 'ভাষা' : 'Language'}</span>
+              </span>
+              <LanguageToggle variant="pill" />
+            </div>
+          )}
+
           {!collapsed ? (
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-orange-400 shrink-0">
-                M
+            <div 
+              onClick={() => navigateTo('users_roles')}
+              className="flex items-center gap-2.5 cursor-pointer hover:bg-slate-900/60 p-1 rounded-md transition-colors"
+              title="Click to Switch Role or View Permissions"
+            >
+              <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-orange-400 shrink-0 text-xs">
+                {currentUser?.name.charAt(0) || 'U'}
               </div>
               <div className="truncate flex-1">
-                <div className="text-xs font-bold text-white truncate">Al-Haj Mizanur Rahman</div>
-                <div className="text-[11px] text-orange-400 font-medium flex items-center gap-1">
-                  <ShieldCheck className="w-3 h-3 inline" /> Admin (Full Access)
+                <div className="text-xs font-bold text-white truncate">
+                  {currentUser?.name || 'Authorized User'}
+                </div>
+                <div className="text-[11px] text-orange-400 font-medium flex items-center gap-1 truncate">
+                  <ShieldCheck className="w-3 h-3 inline shrink-0" />
+                  <span className="truncate">{roleConfig.title}</span>
                 </div>
               </div>
+              <RefreshCw className="w-3.5 h-3.5 text-slate-500 hover:text-orange-400 shrink-0" />
             </div>
           ) : (
-            <div className="flex justify-center">
+            <div 
+              onClick={() => navigateTo('users_roles')}
+              className="flex justify-center cursor-pointer"
+              title={`Logged in as ${currentUser?.name} (${roleConfig.title})`}
+            >
               <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-orange-400 text-xs">
-                M
+                {currentUser?.name.charAt(0) || 'U'}
               </div>
             </div>
           )}

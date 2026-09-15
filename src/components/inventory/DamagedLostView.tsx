@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { AlertOctagon, Plus, CheckCircle, ShieldAlert, FileText, ArrowRight, RotateCcw } from 'lucide-react';
-import { formatBDT } from '../../utils/formatters';
+import { AlertOctagon, Plus } from 'lucide-react';
 
 export const DamagedLostView: React.FC = () => {
-  const { products, recordDamagedCylinder } = useApp();
+  const { products, recordDamagedCylinder, t, formatQty, formatDate } = useApp();
 
   const [damagedLogs, setDamagedLogs] = useState([
     {
@@ -73,9 +72,9 @@ export const DamagedLostView: React.FC = () => {
     <div className="space-y-4">
       <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-black text-slate-900 tracking-tight">Damaged, Leaking & Lost Cylinders</h1>
+          <h1 className="text-lg font-black text-slate-900 tracking-tight">{t('damage.title')}</h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Hazard quarantine tracking, tare-weight defect reporting, and refinery warranty replacements
+            {t('damage.subtitle')}
           </p>
         </div>
 
@@ -84,7 +83,7 @@ export const DamagedLostView: React.FC = () => {
           className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-md text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5"
         >
           <Plus className="w-4 h-4" />
-          <span>Report Damaged Cylinder</span>
+          <span>{t('damage.report_btn')}</span>
         </button>
       </div>
 
@@ -92,22 +91,22 @@ export const DamagedLostView: React.FC = () => {
         <table className="w-full text-left text-xs">
           <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
             <tr>
-              <th className="px-3 py-2.5">Report ID</th>
-              <th className="px-3 py-2.5">Date</th>
-              <th className="px-3 py-2.5">Brand & Size</th>
-              <th className="px-3 py-2.5 text-center">Defective Units</th>
-              <th className="px-3 py-2.5">Defect Condition</th>
-              <th className="px-3 py-2.5">Storage Bay</th>
-              <th className="px-3 py-2.5">Replacement Status</th>
+              <th className="px-3 py-2.5">{t('damage.report_id')}</th>
+              <th className="px-3 py-2.5">{t('common.date')}</th>
+              <th className="px-3 py-2.5">{t('damage.brand_size')}</th>
+              <th className="px-3 py-2.5 text-center">{t('damage.defective_units')}</th>
+              <th className="px-3 py-2.5">{t('damage.defect_condition')}</th>
+              <th className="px-3 py-2.5">{t('damage.storage_bay')}</th>
+              <th className="px-3 py-2.5">{t('damage.replacement_status')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {damagedLogs.map(d => (
               <tr key={d.id} className="hover:bg-slate-50/80">
                 <td className="px-3 py-2.5 font-bold font-mono text-rose-700">{d.id}</td>
-                <td className="px-3 py-2.5 text-slate-500">{d.date}</td>
+                <td className="px-3 py-2.5 text-slate-500">{formatDate(d.date)}</td>
                 <td className="px-3 py-2.5 font-bold text-slate-900">{d.brand} - {d.size}</td>
-                <td className="px-3 py-2.5 text-center font-black text-rose-600">{d.qty} pcs</td>
+                <td className="px-3 py-2.5 text-center font-black text-rose-600">{formatQty(d.qty)}</td>
                 <td className="px-3 py-2.5 text-slate-700">{d.condition}</td>
                 <td className="px-3 py-2.5 text-slate-500">{d.location}</td>
                 <td className="px-3 py-2.5">
@@ -126,12 +125,12 @@ export const DamagedLostView: React.FC = () => {
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-4 border border-slate-200 space-y-3 text-xs">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <AlertOctagon className="w-4 h-4 text-rose-600" />
-              <span>Report Defective or Condemned Cylinder</span>
+              <span>{t('damage.modal_title')}</span>
             </h3>
 
             <form onSubmit={handleAddDamaged} className="space-y-3">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Cylinder Product</label>
+                <label className="block font-bold text-slate-700 mb-1">{t('damage.cylinder_product')}</label>
                 <select
                   value={selectedProductId}
                   onChange={e => setSelectedProductId(e.target.value)}
@@ -147,7 +146,7 @@ export const DamagedLostView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Quantity</label>
+                  <label className="block font-bold text-slate-700 mb-1">{t('common.quantity')}</label>
                   <input
                     type="number"
                     min="1"
@@ -157,7 +156,7 @@ export const DamagedLostView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Quarantine Location</label>
+                  <label className="block font-bold text-slate-700 mb-1">{t('damage.storage_bay')}</label>
                   <input
                     type="text"
                     value={location}
@@ -168,7 +167,7 @@ export const DamagedLostView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Defect Category</label>
+                <label className="block font-bold text-slate-700 mb-1">{t('damage.defect_category')}</label>
                 <select
                   value={condition}
                   onChange={e => setCondition(e.target.value)}
@@ -188,13 +187,13 @@ export const DamagedLostView: React.FC = () => {
                   onClick={() => setIsModalOpen(false)}
                   className="px-3 py-1.5 bg-slate-100 rounded text-slate-700 font-semibold"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded font-bold"
                 >
-                  Confirm Defect Report
+                  {t('damage.confirm_report')}
                 </button>
               </div>
             </form>

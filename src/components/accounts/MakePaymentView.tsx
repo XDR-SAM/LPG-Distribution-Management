@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { PaymentMethod } from '../../types';
-import { formatBDT } from '../../utils/formatters';
-import { ArrowUpRight, CheckCircle, Building2, Wallet } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 
 export const MakePaymentView: React.FC = () => {
-  const { suppliers, paySupplier, setActiveView } = useApp();
+  const { suppliers, paySupplier, setActiveView, t, formatCurrency } = useApp();
 
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>(suppliers[0]?.id || '');
   const [date, setDate] = useState<string>('2026-09-14');
@@ -39,9 +38,9 @@ export const MakePaymentView: React.FC = () => {
     <div className="space-y-4 max-w-2xl mx-auto">
       <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-2xs flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-black text-slate-900 tracking-tight">Pay Supplier / Depot</h1>
+          <h1 className="text-lg font-black text-slate-900 tracking-tight">{t('payment.pay_supplier_title')}</h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Issue payments to LPG refineries and plant operators, reducing company trade payables
+            {t('payment.pay_supplier_subtitle')}
           </p>
         </div>
 
@@ -49,14 +48,14 @@ export const MakePaymentView: React.FC = () => {
           onClick={() => setActiveView('accounts_cashbook')}
           className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-semibold text-xs"
         >
-          View Cashbook
+          {t('payment.cashbook_btn')}
         </button>
       </div>
 
       <div className="bg-white p-5 rounded-lg border border-slate-200 shadow-2xs space-y-4 text-xs">
         <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Select Supplier Depot *</label>
+            <label className="block font-bold text-slate-700 mb-1">{t('payment.select_supplier')}</label>
             <select
               value={selectedSupplierId}
               onChange={e => setSelectedSupplierId(e.target.value)}
@@ -64,7 +63,7 @@ export const MakePaymentView: React.FC = () => {
             >
               {suppliers.map(s => (
                 <option key={s.id} value={s.id}>
-                  {s.companyName} — Payable: {formatBDT(s.currentPayable)}
+                  {s.companyName} — Payable: {formatCurrency(s.currentPayable)}
                 </option>
               ))}
             </select>
@@ -73,11 +72,11 @@ export const MakePaymentView: React.FC = () => {
           {selectedSupplier && (
             <div className="p-3 bg-rose-50/40 rounded-lg border border-rose-200 flex justify-between items-center">
               <div>
-                <span className="text-slate-500 block text-[11px]">Current Outstanding Payable:</span>
-                <span className="font-black text-rose-600 text-base">{formatBDT(selectedSupplier.currentPayable)}</span>
+                <span className="text-slate-500 block text-[11px]">{t('payment.current_payable')}:</span>
+                <span className="font-black text-rose-600 text-base">{formatCurrency(selectedSupplier.currentPayable)}</span>
               </div>
               <div className="text-right">
-                <span className="text-slate-500 block text-[11px]">Contact Depot:</span>
+                <span className="text-slate-500 block text-[11px]">{t('payment.contact_depot')}:</span>
                 <span className="font-semibold text-slate-700">{selectedSupplier.contactPerson} ({selectedSupplier.phone})</span>
               </div>
             </div>
@@ -85,7 +84,7 @@ export const MakePaymentView: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Payment Date</label>
+              <label className="block font-bold text-slate-700 mb-1">{t('payment.payment_date')}</label>
               <input
                 type="date"
                 value={date}
@@ -95,7 +94,7 @@ export const MakePaymentView: React.FC = () => {
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Payment Method</label>
+              <label className="block font-bold text-slate-700 mb-1">{t('payment.method')}</label>
               <select
                 value={paymentMethod}
                 onChange={e => setPaymentMethod(e.target.value as PaymentMethod)}
@@ -108,7 +107,7 @@ export const MakePaymentView: React.FC = () => {
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Source Account *</label>
+              <label className="block font-bold text-slate-700 mb-1">{t('payment.source_account')}</label>
               <select
                 value={account}
                 onChange={e => setAccount(e.target.value)}
@@ -121,7 +120,7 @@ export const MakePaymentView: React.FC = () => {
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Cheque No / Transfer Reference</label>
+              <label className="block font-bold text-slate-700 mb-1">{t('payment.cheque_ref')}</label>
               <input
                 type="text"
                 value={chequeNo}
@@ -133,7 +132,7 @@ export const MakePaymentView: React.FC = () => {
           </div>
 
           <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-            <label className="block font-black text-slate-900 mb-1 text-xs">Payment Amount (৳) *</label>
+            <label className="block font-black text-slate-900 mb-1 text-xs">{t('payment.payment_amount')}</label>
             <input
               type="number"
               min="1"
@@ -144,7 +143,7 @@ export const MakePaymentView: React.FC = () => {
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Payment Memo / Purpose</label>
+            <label className="block font-bold text-slate-700 mb-1">{t('payment.payment_memo')}</label>
             <input
               type="text"
               value={notes}
@@ -159,7 +158,7 @@ export const MakePaymentView: React.FC = () => {
               className="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white rounded font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-1.5"
             >
               <CheckCircle className="w-4 h-4" />
-              <span>Record Supplier Payment</span>
+              <span>{t('payment.record_supplier_payment')}</span>
             </button>
           </div>
         </form>

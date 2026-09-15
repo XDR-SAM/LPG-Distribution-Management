@@ -1,5 +1,6 @@
 import React from 'react';
 import { LucideIcon } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface StatCardProps {
   title: string;
@@ -77,6 +78,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   onClick,
   badge,
 }) => {
+  const { language } = useLanguage();
   const c = colorMap[color] || colorMap.blue;
 
   return (
@@ -106,7 +108,9 @@ export const StatCard: React.FC<StatCardProps> = ({
               >
                 {trend.value}
               </span>
-              <span className="text-[11px] text-slate-400">vs yesterday</span>
+              <span className="text-[11px] text-slate-400">
+                {language === 'bn' ? 'গতকালকের তুলনায়' : 'vs yesterday'}
+              </span>
             </div>
           )}
         </div>

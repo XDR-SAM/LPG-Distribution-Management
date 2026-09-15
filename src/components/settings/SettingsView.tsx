@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Building2, Save, RotateCcw, ShieldCheck, Printer, Database, HardDrive, CheckCircle } from 'lucide-react';
+import { Building2, Save, RotateCcw, ShieldCheck, CheckCircle } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
+  const { t } = useApp();
   const [companyName, setCompanyName] = useState('Rahman LPG Distribution');
   const [proprietor, setProprietor] = useState('Md. Mustafizur Rahman');
   const [bercLicense, setBercLicense] = useState('BERC/LPG-DIST/DHK-2024/0419');
@@ -10,7 +11,6 @@ export const SettingsView: React.FC = () => {
   const [phone, setPhone] = useState('01711-000000');
   const [email, setEmail] = useState('info@rahmanlpg.bd');
   const [address, setAddress] = useState('Plot 18, Ring Road, Mohammadpur, Dhaka-1207');
-  const [godownCount, setGodownCount] = useState(2);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   const [deposit12, setDeposit12] = useState(2200);
@@ -34,9 +34,9 @@ export const SettingsView: React.FC = () => {
     <div className="space-y-4 max-w-4xl">
       <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-black text-slate-900 tracking-tight">System Settings & Company Configuration</h1>
+          <h1 className="text-lg font-black text-slate-900 tracking-tight">{t('settings.title')}</h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Configure dealership details, BERC license numbers, invoice headers, and cylinder deposit benchmarks
+            {t('settings.subtitle')}
           </p>
         </div>
 
@@ -52,12 +52,12 @@ export const SettingsView: React.FC = () => {
         <div className="bg-white p-5 rounded-lg border border-slate-200 shadow-2xs space-y-4">
           <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-2">
             <Building2 className="w-4 h-4 text-orange-600" />
-            <span>Distribution Agency Profile</span>
+            <span>{t('settings.business_profile')}</span>
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Company / Agency Name *</label>
+              <label className="block font-bold text-slate-700 mb-1">{t('supplier.company_name')} *</label>
               <input
                 type="text"
                 value={companyName}
@@ -97,7 +97,7 @@ export const SettingsView: React.FC = () => {
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Contact Phone</label>
+              <label className="block font-bold text-slate-700 mb-1">{t('supplier.phone')}</label>
               <input
                 type="text"
                 value={phone}
@@ -117,7 +117,7 @@ export const SettingsView: React.FC = () => {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block font-bold text-slate-700 mb-1">Godown Office Address</label>
+              <label className="block font-bold text-slate-700 mb-1">{t('supplier.address')}</label>
               <input
                 type="text"
                 value={address}
@@ -187,10 +187,11 @@ export const SettingsView: React.FC = () => {
             className="px-5 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5"
           >
             <Save className="w-4 h-4" />
-            <span>Save Configuration</span>
+            <span>{t('common.save')}</span>
           </button>
         </div>
       </form>
     </div>
   );
 };
+

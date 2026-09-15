@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Search, Activity, ArrowDownLeft, ArrowUpRight, RotateCcw, Sliders, Flame } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 export const StockMovementsView: React.FC = () => {
-  const { stockMovements, products } = useApp();
+  const { stockMovements, t, formatQty, formatDate, toBnNum } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('ALL');
 
@@ -34,9 +34,9 @@ export const StockMovementsView: React.FC = () => {
     <div className="space-y-4">
       <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-black text-slate-900 tracking-tight">Cylinder Movement Ledger</h1>
+          <h1 className="text-lg font-black text-slate-900 tracking-tight">{t('movement.title')}</h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Audit trail of every cylinder transaction: Inflows, Outflows, Exchanges, and Godown reconciliation
+            {t('movement.subtitle')}
           </p>
         </div>
       </div>
@@ -47,7 +47,7 @@ export const StockMovementsView: React.FC = () => {
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search reference, cylinder brand, notes..."
+              placeholder={t('movement.search_placeholder')}
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded font-medium text-slate-900 text-xs"
@@ -59,7 +59,7 @@ export const StockMovementsView: React.FC = () => {
             onChange={e => setTypeFilter(e.target.value)}
             className="px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded font-medium text-slate-700"
           >
-            <option value="ALL">All Movement Types</option>
+            <option value="ALL">{t('movement.all_types')}</option>
             <option value="SALE_FULL_OUT">Sale Full Out</option>
             <option value="CUSTOMER_EMPTY_IN">Customer Empty In</option>
             <option value="PURCHASE_FULL_IN">Purchase Full In</option>
@@ -72,7 +72,7 @@ export const StockMovementsView: React.FC = () => {
         </div>
 
         <div className="text-slate-500 font-medium">
-          Showing <strong>{filtered.length}</strong> movement records
+          Showing <strong>{toBnNum(filtered.length)}</strong> movement records
         </div>
       </div>
 
@@ -81,14 +81,14 @@ export const StockMovementsView: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
               <tr>
-                <th className="px-3 py-2.5">Date & Time</th>
-                <th className="px-3 py-2.5">Reference No</th>
-                <th className="px-3 py-2.5">Cylinder Spec</th>
-                <th className="px-3 py-2.5">Movement Type</th>
-                <th className="px-3 py-2.5 text-center">Full Change</th>
-                <th className="px-3 py-2.5 text-center">Empty Change</th>
-                <th className="px-3 py-2.5">Warehouse</th>
-                <th className="px-3 py-2.5">Notes</th>
+                <th className="px-3 py-2.5">{t('movement.datetime')}</th>
+                <th className="px-3 py-2.5">{t('movement.ref_no')}</th>
+                <th className="px-3 py-2.5">{t('movement.cylinder_spec')}</th>
+                <th className="px-3 py-2.5">{t('movement.type')}</th>
+                <th className="px-3 py-2.5 text-center">{t('movement.full_change')}</th>
+                <th className="px-3 py-2.5 text-center">{t('movement.empty_change')}</th>
+                <th className="px-3 py-2.5">{t('movement.warehouse')}</th>
+                <th className="px-3 py-2.5">{t('movement.notes')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -101,7 +101,7 @@ export const StockMovementsView: React.FC = () => {
 
                 return (
                   <tr key={m.id} className="hover:bg-slate-50/80">
-                    <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{m.date}</td>
+                    <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{formatDate(m.date)}</td>
                     <td className="px-3 py-2.5 font-mono font-bold text-slate-900">{getRef(m)}</td>
                     <td className="px-3 py-2.5 font-semibold text-slate-800">{getProductName(m)}</td>
                     <td className="px-3 py-2.5">
@@ -114,7 +114,7 @@ export const StockMovementsView: React.FC = () => {
                         <span className="text-slate-400 font-normal">-</span>
                       ) : (
                         <span className={isFullOut ? 'text-rose-600' : 'text-emerald-600'}>
-                          {fullQtyChange > 0 ? `+${fullQtyChange}` : fullQtyChange}
+                          {fullQtyChange > 0 ? `+${formatQty(fullQtyChange)}` : formatQty(fullQtyChange)}
                         </span>
                       )}
                     </td>
@@ -123,7 +123,7 @@ export const StockMovementsView: React.FC = () => {
                         <span className="text-slate-400 font-normal">-</span>
                       ) : (
                         <span className={isEmptyOut ? 'text-rose-600' : 'text-blue-600'}>
-                          {emptyQtyChange > 0 ? `+${emptyQtyChange}` : emptyQtyChange}
+                          {emptyQtyChange > 0 ? `+${formatQty(emptyQtyChange)}` : formatQty(emptyQtyChange)}
                         </span>
                       )}
                     </td>
@@ -139,3 +139,4 @@ export const StockMovementsView: React.FC = () => {
     </div>
   );
 };
+

@@ -19,6 +19,11 @@ export const NewPurchaseView: React.FC = () => {
     products,
     addPurchase,
     setActiveView,
+    t,
+    language,
+    formatCurrency,
+    formatQty,
+    toBnNum,
   } = useApp();
 
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>(suppliers[0]?.id || '');
@@ -150,14 +155,14 @@ export const NewPurchaseView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-lg font-black text-slate-900 tracking-tight">
-              New Cylinder Purchase & Depot Receipt
+              {t('purchase.new_title')}
             </h1>
             <span className="text-[11px] font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded border border-blue-200">
               PUR-2026-(Auto)
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Record incoming filled cylinders from company depot and track empty cylinders loaded on truck
+            {t('purchase.new_subtitle')}
           </p>
         </div>
 
@@ -166,13 +171,13 @@ export const NewPurchaseView: React.FC = () => {
             onClick={() => setActiveView('purchase_list')}
             className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-semibold"
           >
-            Purchase History
+            {t('purchase.history_btn')}
           </button>
           <button
             onClick={handleSavePurchase}
             className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold shadow-xs"
           >
-            Save Purchase
+            {t('purchase.save_btn')}
           </button>
         </div>
       </div>
@@ -184,12 +189,12 @@ export const NewPurchaseView: React.FC = () => {
           <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-2xs space-y-3">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
               <Building2 className="w-4 h-4 text-blue-600" />
-              <span>Depot Supplier & Challan Details</span>
+              <span>{t('purchase.depot_details')}</span>
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Company / Supplier *</label>
+                <label className="block font-bold text-slate-700 mb-1">{t('purchase.company_supplier')}</label>
                 <select
                   value={selectedSupplierId}
                   onChange={e => setSelectedSupplierId(e.target.value)}
@@ -204,7 +209,7 @@ export const NewPurchaseView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Company Challan / Gate Pass #</label>
+                <label className="block font-bold text-slate-700 mb-1">{t('purchase.gate_pass')}</label>
                 <input
                   type="text"
                   value={supplierInvoiceNo}
@@ -215,7 +220,7 @@ export const NewPurchaseView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Arrival Date</label>
+                <label className="block font-bold text-slate-700 mb-1">{t('purchase.arrival_date')}</label>
                 <input
                   type="date"
                   value={date}
@@ -225,7 +230,7 @@ export const NewPurchaseView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Depot Truck No</label>
+                <label className="block font-bold text-slate-700 mb-1">{t('purchase.truck_no')}</label>
                 <input
                   type="text"
                   value={truckNo}
@@ -235,7 +240,7 @@ export const NewPurchaseView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Driver Name</label>
+                <label className="block font-bold text-slate-700 mb-1">{t('purchase.driver_name')}</label>
                 <input
                   type="text"
                   value={driverName}
@@ -245,7 +250,7 @@ export const NewPurchaseView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Driver Phone</label>
+                <label className="block font-bold text-slate-700 mb-1">{t('purchase.driver_phone')}</label>
                 <input
                   type="text"
                   value={driverPhone}
@@ -262,7 +267,7 @@ export const NewPurchaseView: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Receipt className="w-4 h-4 text-blue-600" />
                 <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
-                  Received Full Cylinders & Returned Empties
+                  {t('purchase.received_and_returned')}
                 </h2>
               </div>
               <button
@@ -270,7 +275,7 @@ export const NewPurchaseView: React.FC = () => {
                 className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold flex items-center gap-1 shadow-2xs"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>Add Product</span>
+                <span>{t('purchase.add_product')}</span>
               </button>
             </div>
 
@@ -278,11 +283,11 @@ export const NewPurchaseView: React.FC = () => {
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                   <tr>
-                    <th className="px-3 py-2">Brand & Size</th>
-                    <th className="px-2 py-2 text-center w-24">Full Recv</th>
-                    <th className="px-2 py-2 text-center w-24">Empty Sent</th>
-                    <th className="px-2 py-2 text-right w-24">Unit Cost (৳)</th>
-                    <th className="px-3 py-2 text-right w-28">Amount</th>
+                    <th className="px-3 py-2">{t('sales.product_item')}</th>
+                    <th className="px-2 py-2 text-center w-24">{t('purchase.full_recv')}</th>
+                    <th className="px-2 py-2 text-center w-24">{t('purchase.empty_sent_col')}</th>
+                    <th className="px-2 py-2 text-right w-24">{t('purchase.cost_rate')}</th>
+                    <th className="px-3 py-2 text-right w-28">{t('sales.total')}</th>
                     <th className="px-2 py-2 w-8"></th>
                   </tr>
                 </thead>
@@ -297,7 +302,7 @@ export const NewPurchaseView: React.FC = () => {
                         >
                           {products.map(p => (
                             <option key={p.id} value={p.id}>
-                              {p.brand} {p.size} (Cost: {formatBDT(p.purchasePrice)})
+                              {p.brand} {p.size} ({language === 'bn' ? 'দর: ' : 'Cost: '}{formatCurrency(p.purchasePrice)})
                             </option>
                           ))}
                         </select>
@@ -333,7 +338,7 @@ export const NewPurchaseView: React.FC = () => {
                       </td>
 
                       <td className="px-3 py-2 text-right font-bold text-slate-900">
-                        {formatBDT(item.amount)}
+                        {formatCurrency(item.amount)}
                       </td>
 
                       <td className="px-2 py-2 text-center">
@@ -341,6 +346,7 @@ export const NewPurchaseView: React.FC = () => {
                           <button
                             onClick={() => removeItemRow(idx)}
                             className="text-slate-400 hover:text-rose-600"
+                            title={t('common.delete')}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -357,18 +363,22 @@ export const NewPurchaseView: React.FC = () => {
               <div className="flex items-center gap-2">
                 <RotateCcw className="w-4 h-4 text-blue-600" />
                 <span>
-                  Receiving <strong>{totalFullReceived} full cylinders</strong>. Returning <strong>{totalEmptySent} empty cylinders</strong> on depot truck.
+                  {language === 'bn' ? (
+                    <>মোট <strong>{formatQty(totalFullReceived)}</strong> ভর্তি সিলিন্ডার গৃহীত। ট্রাকে <strong>{formatQty(totalEmptySent)}</strong> খালি সিলিন্ডার প্রেরিত।</>
+                  ) : (
+                    <>Receiving <strong>{totalFullReceived} full cylinders</strong>. Returning <strong>{totalEmptySent} empty cylinders</strong> on depot truck.</>
+                  )}
                 </span>
               </div>
               <span className="font-bold text-blue-900">
-                Supplier Cylinder Account Impact: {totalFullReceived - totalEmptySent} pcs
+                {t('purchase.supplier_balance_impact')}: {formatQty(totalFullReceived - totalEmptySent)}
               </span>
             </div>
           </div>
 
           {/* Notes */}
           <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-2xs text-xs">
-            <label className="block font-bold text-slate-700 mb-1">Purchase Memo / Notes</label>
+            <label className="block font-bold text-slate-700 mb-1">{t('purchase.purchase_notes')}</label>
             <input
               type="text"
               value={notes}
@@ -382,17 +392,17 @@ export const NewPurchaseView: React.FC = () => {
         <div className="space-y-4">
           <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-2xs space-y-3">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wide border-b border-slate-100 pb-2">
-              Purchase Settlement
+              {t('purchase.settlement')}
             </h2>
 
             <div className="space-y-2 text-xs divide-y divide-slate-100">
               <div className="flex justify-between py-1">
-                <span className="text-slate-600">Product Subtotal:</span>
-                <span className="font-bold text-slate-900">{formatBDT(subtotal)}</span>
+                <span className="text-slate-600">{t('purchase.product_subtotal')}:</span>
+                <span className="font-bold text-slate-900">{formatCurrency(subtotal)}</span>
               </div>
 
               <div className="flex items-center justify-between py-1.5">
-                <span className="text-slate-600">Depot Transport / Freight:</span>
+                <span className="text-slate-600">{t('purchase.transport_freight')}:</span>
                 <input
                   type="number"
                   min="0"
@@ -403,7 +413,7 @@ export const NewPurchaseView: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-between py-1.5">
-                <span className="text-slate-600">Unloading / Labor:</span>
+                <span className="text-slate-600">{t('purchase.unloading_labor')}:</span>
                 <input
                   type="number"
                   min="0"
@@ -414,27 +424,27 @@ export const NewPurchaseView: React.FC = () => {
               </div>
 
               <div className="flex justify-between py-2 text-sm font-extrabold text-slate-900 bg-slate-50 px-2 rounded">
-                <span>Total Invoice Bill:</span>
-                <span className="text-blue-700 text-base">{formatBDT(grandTotal)}</span>
+                <span>{t('purchase.total_invoice_bill')}:</span>
+                <span className="text-blue-700 text-base">{formatCurrency(grandTotal)}</span>
               </div>
             </div>
 
             {/* Previous Balance */}
             <div className="p-2.5 rounded bg-slate-50 border border-slate-200 text-xs space-y-1">
               <div className="flex justify-between">
-                <span className="text-slate-500">Supplier Previous Payable:</span>
-                <span className="font-bold text-rose-700">{formatBDT(previousPayable)}</span>
+                <span className="text-slate-500">{t('purchase.prev_payable')}:</span>
+                <span className="font-bold text-rose-700">{formatCurrency(previousPayable)}</span>
               </div>
               <div className="flex justify-between pt-1 border-t border-slate-200">
-                <span className="font-bold text-slate-800">Total Liability:</span>
-                <span className="font-extrabold text-slate-900">{formatBDT(previousPayable + grandTotal)}</span>
+                <span className="font-bold text-slate-800">{t('purchase.total_liability')}:</span>
+                <span className="font-extrabold text-slate-900">{formatCurrency(previousPayable + grandTotal)}</span>
               </div>
             </div>
 
             {/* Payment Section */}
             <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Amount Paid to Company (৳)</label>
+                <label className="block font-bold text-slate-700 mb-1">{t('purchase.amount_paid_company')}</label>
                 <input
                   type="number"
                   min="0"
@@ -445,23 +455,23 @@ export const NewPurchaseView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Payment Channel</label>
+                <label className="block font-bold text-slate-700 mb-1">{t('purchase.payment_channel')}</label>
                 <select
                   value={paymentMethod}
                   onChange={e => setPaymentMethod(e.target.value as PaymentMethod)}
                   className="w-full p-1.5 border border-slate-300 rounded font-semibold text-slate-900 bg-white"
                 >
-                  <option value="Bank Transfer">Bank Transfer (Islami Bank)</option>
-                  <option value="Cash">Cash in Hand</option>
-                  <option value="Cheque">Bank Cheque</option>
-                  <option value="Credit / Due">Company Credit (Full Due)</option>
+                  <option value="Bank Transfer">{t('payment.bank')}</option>
+                  <option value="Cash">{t('payment.cash')}</option>
+                  <option value="Cheque">{t('payment.cheque')}</option>
+                  <option value="Credit / Due">{t('payment.due')}</option>
                 </select>
               </div>
 
               <div className="p-2.5 rounded bg-rose-50 border border-rose-200 text-xs">
                 <div className="flex justify-between">
-                  <span className="font-bold text-rose-800">Closing Supplier Payable:</span>
-                  <span className="font-black text-rose-700 text-sm">{formatBDT(currentPayable)}</span>
+                  <span className="font-bold text-rose-800">{t('purchase.closing_payable')}:</span>
+                  <span className="font-black text-rose-700 text-sm">{formatCurrency(currentPayable)}</span>
                 </div>
               </div>
             </div>
@@ -471,7 +481,7 @@ export const NewPurchaseView: React.FC = () => {
               className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-1.5"
             >
               <CheckCircle className="w-4 h-4" />
-              <span>Confirm & Stock Received Cylinders</span>
+              <span>{t('purchase.confirm_btn')}</span>
             </button>
           </div>
         </div>
@@ -485,9 +495,9 @@ export const NewPurchaseView: React.FC = () => {
             </div>
 
             <div>
-              <h3 className="text-base font-bold text-slate-900">Purchase Successfully Recorded!</h3>
+              <h3 className="text-base font-bold text-slate-900">{t('purchase.success_title')}</h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                Cylinder inventory and supplier ledger have been updated automatically.
+                {t('purchase.success_subtitle')}
               </p>
             </div>
 
@@ -499,7 +509,7 @@ export const NewPurchaseView: React.FC = () => {
                 }}
                 className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-xs"
               >
-                View Updated Stock
+                {t('purchase.view_updated_stock')}
               </button>
               <button
                 onClick={() => {
@@ -508,7 +518,7 @@ export const NewPurchaseView: React.FC = () => {
                 }}
                 className="flex-1 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded text-xs"
               >
-                Purchase History
+                {t('purchase.history_btn')}
               </button>
             </div>
           </div>
