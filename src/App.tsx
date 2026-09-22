@@ -41,13 +41,20 @@ import { DailyReportView } from './components/reports/DailyReportView';
 import { CylinderAuditView } from './components/reports/CylinderAuditView';
 import { SettingsView } from './components/settings/SettingsView';
 import { AuditLogsView } from './components/audit/AuditLogsView';
+import { LoginView } from './components/auth/LoginView';
 
 const MainContent: React.FC = () => {
   const { activeView, currentUser } = useApp();
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
+  // Protected Route Check: Show LoginView if unauthenticated
+  if (!currentUser) {
+    return <LoginView />;
+  }
+
   const currentRole = currentUser?.role || 'admin';
+
 
   const renderView = () => {
     // 1. RBAC Check: Ensure role is permitted to access activeView

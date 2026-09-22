@@ -258,5 +258,87 @@ export const ROLE_CONFIGURATIONS: Record<UserRole, RoleConfig> = {
     allowedActions: [
       'receive_empty'
     ]
+  },
+  owner: {
+    role: 'owner',
+    title: 'Business Owner',
+    banglaTitle: 'মালিক / সত্ত্বাধিকারী',
+    description: 'Full strategic, commercial, and financial ownership over all operations, margins, and audits.',
+    badgeColor: {
+      bg: 'bg-purple-50',
+      text: 'text-purple-700',
+      border: 'border-purple-200',
+      dot: 'bg-purple-500'
+    },
+    allowedViews: [
+      'dashboard', 'sales_pos', 'sales_new', 'sales_list', 'sales_challans', 'sales_returns',
+      'purchase_new', 'purchase_list', 'inventory_stock', 'inventory_movements', 'inventory_damaged',
+      'customer_list', 'customer_cylinder_due', 'customer_ledger', 'supplier_list', 'supplier_ledger',
+      'accounts_cashbook', 'accounts_receive', 'accounts_pay', 'accounts_expenses', 'accounts_summary',
+      'report_daily', 'report_cylinder_audit', 'reports_center', 'settings', 'audit_logs', 'users_roles', 'supabase_sync'
+    ],
+    allowedActions: [
+      'view_cost_price', 'view_profit_margin', 'create_sale', 'cancel_sale', 'delete_sale',
+      'create_purchase', 'adjust_stock', 'receive_empty', 'record_damage', 'receive_payment',
+      'make_supplier_payment', 'record_expense', 'manage_users', 'manage_settings', 'view_audit_logs',
+      'export_data', 'sync_database'
+    ]
+  },
+  sales_operator: {
+    role: 'sales_operator',
+    title: 'Sales Operator',
+    banglaTitle: 'বিক্রয় অপারেটর',
+    description: 'Front-desk point-of-sale, invoices, delivery challans, and customer money receipts.',
+    badgeColor: {
+      bg: 'bg-emerald-50',
+      text: 'text-emerald-700',
+      border: 'border-emerald-200',
+      dot: 'bg-emerald-500'
+    },
+    allowedViews: [
+      'dashboard', 'sales_pos', 'sales_new', 'sales_list', 'sales_challans', 'sales_returns',
+      'customer_list', 'customer_cylinder_due', 'customer_ledger', 'accounts_receive',
+      'inventory_stock'
+    ],
+    allowedActions: [
+      'create_sale', 'receive_empty', 'receive_payment'
+    ]
+  },
+  store_keeper: {
+    role: 'store_keeper',
+    title: 'Store Keeper / Godown Manager',
+    banglaTitle: 'গুদাম রক্ষক',
+    description: 'Manages physical godown inventory, receiving supplier purchases, cylinder audits, and stock movements.',
+    badgeColor: {
+      bg: 'bg-indigo-50',
+      text: 'text-indigo-700',
+      border: 'border-indigo-200',
+      dot: 'bg-indigo-500'
+    },
+    allowedViews: [
+      'dashboard', 'inventory_stock', 'inventory_movements', 'inventory_damaged',
+      'purchase_new', 'purchase_list', 'sales_challans', 'customer_cylinder_due', 'report_cylinder_audit'
+    ],
+    allowedActions: [
+      'create_purchase', 'adjust_stock', 'receive_empty', 'record_damage'
+    ]
+  },
+  delivery_staff: {
+    role: 'delivery_staff',
+    title: 'Delivery Staff / Transport',
+    banglaTitle: 'ডেলিভারি ও পরিবহন কর্মী',
+    description: 'View delivery routes, challan status, vehicle cylinder loads, and empty returns.',
+    badgeColor: {
+      bg: 'bg-slate-100',
+      text: 'text-slate-700',
+      border: 'border-slate-300',
+      dot: 'bg-slate-500'
+    },
+    allowedViews: [
+      'dashboard', 'sales_challans', 'customer_list', 'customer_cylinder_due'
+    ],
+    allowedActions: [
+      'receive_empty'
+    ]
   }
 };

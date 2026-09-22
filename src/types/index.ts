@@ -1,10 +1,15 @@
 export type UserRole = 
+  | 'owner'
   | 'admin' 
   | 'manager' 
   | 'accountant' 
+  | 'sales_operator'
+  | 'store_keeper'
+  | 'delivery_staff'
   | 'sales' 
   | 'storekeeper' 
   | 'delivery';
+
 
 export interface User {
   id: string;

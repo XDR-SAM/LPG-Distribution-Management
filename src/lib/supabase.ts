@@ -1,9 +1,10 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Read Supabase credentials from Vite environment
-const metaEnv = (import.meta as unknown as { env?: Record<string, string | undefined> }).env || {};
-const supabaseUrl = metaEnv.VITE_SUPABASE_URL;
-const supabaseAnonKey = metaEnv.VITE_SUPABASE_ANON_KEY;
+// Read Supabase credentials from Vite environment (browser) or process.env (Node/SSR/scripts)
+const metaEnv = typeof import.meta !== 'undefined' && (import.meta as any).env ? (import.meta as any).env : {};
+const procEnv = typeof process !== 'undefined' && process.env ? process.env : {};
+const supabaseUrl = (metaEnv.VITE_SUPABASE_URL || procEnv.VITE_SUPABASE_URL) as string | undefined;
+const supabaseAnonKey = (metaEnv.VITE_SUPABASE_ANON_KEY || procEnv.VITE_SUPABASE_ANON_KEY) as string | undefined;
 
 export const isSupabaseConfigured = (): boolean => {
   return Boolean(
@@ -22,24 +23,20 @@ export const getSupabaseConfig = () => {
   };
 };
 
-let supabaseInstance: SupabaseClient | null = null;
-
-export const getSupabase = (): SupabaseClient | null => {
-  if (!isSupabaseConfigured()) {
-    return null;
+export const supabase: SupabaseClient = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-anon-key',
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+    },
   }
+);
 
-  if (!supabaseInstance && supabaseUrl && supabaseAnonKey) {
-    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-      },
-    });
-  }
+export const getSupabase = (): SupabaseClient => supabase;
 
-  return supabaseInstance;
-};
+
 
 export interface SupabaseHealth {
   configured: boolean;

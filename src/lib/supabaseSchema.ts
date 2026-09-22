@@ -212,30 +212,19 @@ ALTER TABLE financial_transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Public Read Profiles" ON profiles FOR SELECT USING (true);
-CREATE POLICY "Public Read Products" ON products FOR SELECT USING (true);
-CREATE POLICY "Public Read Customers" ON customers FOR SELECT USING (true);
-CREATE POLICY "Public Read Suppliers" ON suppliers FOR SELECT USING (true);
-CREATE POLICY "Public Read Sales" ON sales FOR SELECT USING (true);
-CREATE POLICY "Public Read Purchases" ON purchases FOR SELECT USING (true);
-CREATE POLICY "Public Read Stock" ON stock_movements FOR SELECT USING (true);
-CREATE POLICY "Public Read Receipts" ON money_receipts FOR SELECT USING (true);
-CREATE POLICY "Public Read Expenses" ON expenses FOR SELECT USING (true);
-CREATE POLICY "Public Read Trans" ON financial_transactions FOR SELECT USING (true);
-CREATE POLICY "Public Read Logs" ON audit_logs FOR SELECT USING (true);
-CREATE POLICY "Public Read Conf" ON app_settings FOR SELECT USING (true);
-
-CREATE POLICY "Allow Insert Sales" ON sales FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow Update Sales" ON sales FOR UPDATE USING (true);
-CREATE POLICY "Allow Insert Customers" ON customers FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow Update Customers" ON customers FOR UPDATE USING (true);
-CREATE POLICY "Allow Insert Stock" ON stock_movements FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow Update Stock" ON products FOR UPDATE USING (true);
-CREATE POLICY "Allow Insert Receipts" ON money_receipts FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow Insert Expenses" ON expenses FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow Insert Transactions" ON financial_transactions FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow Insert Logs" ON audit_logs FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow Upsert Conf" ON app_settings FOR ALL USING (true);
+-- Allow full read/write for all application tables (using anon key or authenticated roles)
+CREATE POLICY "Allow All on profiles" ON profiles FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on products" ON products FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on customers" ON customers FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on suppliers" ON suppliers FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on sales" ON sales FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on purchases" ON purchases FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on stock_movements" ON stock_movements FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on money_receipts" ON money_receipts FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on expenses" ON expenses FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on financial_transactions" ON financial_transactions FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on audit_logs" ON audit_logs FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on app_settings" ON app_settings FOR ALL USING (true) WITH CHECK (true);
 
 -- SEED RBAC USERS
 INSERT INTO profiles (id, name, email, role, phone, username, status)
@@ -247,4 +236,53 @@ VALUES
     ('user-5', 'Babul Mia', 'store@demo.com', 'storekeeper', '01811-223344', 'storekeeper', 'active'),
     ('user-6', 'Mohammad Rahim', 'delivery@demo.com', 'delivery', '01899-556677', 'delivery', 'active')
 ON CONFLICT (id) DO NOTHING;
+`;
+
+export const SUPABASE_QUICK_PATCH_SQL = `-- ==============================================================================
+-- LPG MANAGER BD - Instant 1-Click Permissions & Schema Patch
+-- Run this in Supabase SQL Editor if tables already exist:
+-- https://supabase.com/dashboard/project/_/sql
+-- ==============================================================================
+
+-- 1. Ensure sales table has godown column and flexible status constraint
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS godown TEXT DEFAULT 'Main Godown';
+ALTER TABLE sales DROP CONSTRAINT IF EXISTS sales_status_check;
+ALTER TABLE sales ADD CONSTRAINT sales_status_check CHECK (status IN ('completed', 'pending', 'cancelled', 'partial', 'due', 'paid'));
+
+-- 2. Drop any conflicting restrictive policies and grant full access to application
+DROP POLICY IF EXISTS "Allow All on profiles" ON profiles;
+CREATE POLICY "Allow All on profiles" ON profiles FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow All on products" ON products;
+CREATE POLICY "Allow All on products" ON products FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow All on customers" ON customers;
+CREATE POLICY "Allow All on customers" ON customers FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow All on suppliers" ON suppliers;
+CREATE POLICY "Allow All on suppliers" ON suppliers FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow All on sales" ON sales;
+CREATE POLICY "Allow All on sales" ON sales FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow All on purchases" ON purchases;
+CREATE POLICY "Allow All on purchases" ON purchases FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow All on stock_movements" ON stock_movements;
+CREATE POLICY "Allow All on stock_movements" ON stock_movements FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow All on money_receipts" ON money_receipts;
+CREATE POLICY "Allow All on money_receipts" ON money_receipts FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow All on expenses" ON expenses;
+CREATE POLICY "Allow All on expenses" ON expenses FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow All on financial_transactions" ON financial_transactions;
+CREATE POLICY "Allow All on financial_transactions" ON financial_transactions FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow All on audit_logs" ON audit_logs;
+CREATE POLICY "Allow All on audit_logs" ON audit_logs FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow All on app_settings" ON app_settings;
+CREATE POLICY "Allow All on app_settings" ON app_settings FOR ALL USING (true) WITH CHECK (true);
 `;

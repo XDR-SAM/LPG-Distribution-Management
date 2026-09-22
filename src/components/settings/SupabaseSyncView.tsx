@@ -17,8 +17,9 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { checkSupabaseConnection, isSupabaseConfigured, getSupabaseConfig, SupabaseHealth } from '../../lib/supabase';
-import { SUPABASE_SQL_SCHEMA } from '../../lib/supabaseSchema';
+import { SUPABASE_SQL_SCHEMA, SUPABASE_QUICK_PATCH_SQL } from '../../lib/supabaseSchema';
 import { syncAllToSupabase, pullAllFromSupabase } from '../../services/supabaseSyncService';
+import { getSupabase } from '../../lib/supabase';
 
 export const SupabaseSyncView: React.FC = () => {
   const { 
@@ -43,6 +44,8 @@ export const SupabaseSyncView: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatusMessage, setSyncStatusMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copiedPatch, setCopiedPatch] = useState(false);
+  const [remoteCounts, setRemoteCounts] = useState<Record<string, number | null>>({});
   const [activeTab, setActiveTab] = useState<'status' | 'sql' | 'tables'>('status');
 
   const config = getSupabaseConfig();
@@ -53,6 +56,24 @@ export const SupabaseSyncView: React.FC = () => {
     try {
       const res = await checkSupabaseConnection();
       setHealth(res);
+
+      // Fetch live table counts if connected
+      const client = getSupabase();
+      if (client) {
+        const tableNames = ['profiles', 'products', 'customers', 'suppliers', 'sales', 'purchases', 'stock_movements', 'money_receipts', 'expenses', 'app_settings'];
+        const countsObj: Record<string, number | null> = {};
+        await Promise.all(
+          tableNames.map(async (t) => {
+            try {
+              const { count, error } = await client.from(t).select('*', { count: 'exact', head: true });
+              countsObj[t] = error ? null : (count ?? 0);
+            } catch {
+              countsObj[t] = null;
+            }
+          })
+        );
+        setRemoteCounts(countsObj);
+      }
     } catch (e: any) {
       setHealth({
         configured: isSupabaseConfigured(),
@@ -72,6 +93,12 @@ export const SupabaseSyncView: React.FC = () => {
     navigator.clipboard.writeText(SUPABASE_SQL_SCHEMA);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handleCopyPatch = () => {
+    navigator.clipboard.writeText(SUPABASE_QUICK_PATCH_SQL);
+    setCopiedPatch(true);
+    setTimeout(() => setCopiedPatch(false), 2500);
   };
 
   const handleSyncToSupabase = async () => {
@@ -305,10 +332,19 @@ export const SupabaseSyncView: React.FC = () => {
         <div className="bg-white rounded-lg border border-slate-200 shadow-2xs overflow-hidden">
           <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-bold text-slate-900">Database Schema Tables</h2>
-              <p className="text-xs text-slate-500">PostgreSQL tables configured with Row Level Security (RLS)</p>
+              <h2 className="text-sm font-bold text-slate-900">Database Schema Tables & Live Sync Status</h2>
+              <p className="text-xs text-slate-500">Compare records saved in browser local storage vs. records in Supabase cloud PostgreSQL</p>
             </div>
-            <span className="text-xs font-semibold text-slate-600">12 Tables Configured</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-slate-600">12 Tables Configured</span>
+              <button 
+                onClick={runHealthCheck}
+                className="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-xs font-bold text-slate-700 flex items-center gap-1"
+              >
+                <RefreshCw className={`w-3 h-3 ${isChecking ? 'animate-spin' : ''}`} />
+                <span>Refresh Counts</span>
+              </button>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -317,63 +353,108 @@ export const SupabaseSyncView: React.FC = () => {
                 <tr>
                   <th className="px-3 py-2.5">Table Name</th>
                   <th className="px-3 py-2.5">Description</th>
-                  <th className="px-3 py-2.5">Primary Key</th>
                   <th className="px-3 py-2.5">Local Records</th>
-                  <th className="px-3 py-2.5">RLS Status</th>
+                  <th className="px-3 py-2.5">Supabase Remote Records</th>
+                  <th className="px-3 py-2.5">Sync Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {[
-                  { name: 'profiles', desc: 'System users, contact info, and assigned RBAC roles', pk: 'id (text)', count: users.length },
-                  { name: 'products', desc: 'LPG cylinders catalog, deposit values, full/empty/damaged stock', pk: 'id (text)', count: products.length },
-                  { name: 'customers', desc: 'Dealers, hotels, restaurants, credit limits, cylinder holdings', pk: 'id (text)', count: customers.length },
-                  { name: 'suppliers', desc: 'Gas refinery depots, cylinder payables, and dues', pk: 'id (text)', count: suppliers.length },
-                  { name: 'sales', desc: 'Invoices, delivery challans, cylinder exchange quantities', pk: 'id (text)', count: sales.length },
-                  { name: 'purchases', desc: 'Refinery depot cylinder truck dispatches and payments', pk: 'id (text)', count: purchases.length },
-                  { name: 'stock_movements', desc: 'Full/empty movement audit trail across godown transactions', pk: 'id (text)', count: stockMovements.length },
-                  { name: 'money_receipts', desc: 'Payments collected from customers and dealers', pk: 'id (text)', count: moneyReceipts.length },
-                  { name: 'expenses', desc: 'Operational godown overheads, transport, and utilities', pk: 'id (text)', count: expenses.length },
-                  { name: 'audit_logs', desc: 'Immutable security and change audit history', pk: 'id (text)', count: 18 },
-                  { name: 'app_settings', desc: 'Business profile, VAT mode, trade license, and invoice prefixes', pk: 'id (text)', count: 1 },
-                ].map((tbl, i) => (
-                  <tr key={i} className="hover:bg-slate-50">
-                    <td className="px-3 py-2.5 font-mono font-bold text-orange-700">{tbl.name}</td>
-                    <td className="px-3 py-2.5 text-slate-600">{tbl.desc}</td>
-                    <td className="px-3 py-2.5 font-mono text-[11px] text-slate-500">{tbl.pk}</td>
-                    <td className="px-3 py-2.5 font-bold text-slate-900">{tbl.count}</td>
-                    <td className="px-3 py-2.5">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        <Check className="w-3 h-3 text-emerald-600" />
-                        <span>Enabled</span>
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                  { name: 'profiles', desc: 'System users, contact info, and assigned RBAC roles', count: users.length },
+                  { name: 'products', desc: 'LPG cylinders catalog, deposit values, full/empty/damaged stock', count: products.length },
+                  { name: 'customers', desc: 'Dealers, hotels, restaurants, credit limits, cylinder holdings', count: customers.length },
+                  { name: 'suppliers', desc: 'Gas refinery depots, cylinder payables, and dues', count: suppliers.length },
+                  { name: 'sales', desc: 'Invoices, delivery challans, cylinder exchange quantities', count: sales.length },
+                  { name: 'purchases', desc: 'Refinery depot cylinder truck dispatches and payments', count: purchases.length },
+                  { name: 'stock_movements', desc: 'Full/empty movement audit trail across godown transactions', count: stockMovements.length },
+                  { name: 'money_receipts', desc: 'Payments collected from customers and dealers', count: moneyReceipts.length },
+                  { name: 'expenses', desc: 'Operational godown overheads, transport, and utilities', count: expenses.length },
+                  { name: 'app_settings', desc: 'Business profile, VAT mode, trade license, and invoice prefixes', count: 1 },
+                ].map((tbl, i) => {
+                  const remCount = remoteCounts[tbl.name];
+                  const isSyncOk = remCount !== null && remCount !== undefined && remCount > 0;
+                  return (
+                    <tr key={i} className="hover:bg-slate-50">
+                      <td className="px-3 py-2.5 font-mono font-bold text-orange-700">{tbl.name}</td>
+                      <td className="px-3 py-2.5 text-slate-600">{tbl.desc}</td>
+                      <td className="px-3 py-2.5 font-bold text-slate-900">{tbl.count}</td>
+                      <td className="px-3 py-2.5 font-mono font-bold">
+                        {remCount === null || remCount === undefined ? (
+                          <span className="text-slate-400 font-normal">Unknown / Error</span>
+                        ) : (
+                          <span className={remCount > 0 ? 'text-emerald-700' : 'text-slate-500'}>
+                            {remCount} records
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        {isSyncOk ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <Check className="w-3 h-3 text-emerald-600" />
+                            <span>Synced ({remCount})</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                            <span>Pending Sync</span>
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
       )}
 
-      {/* TAB 3: PostgreSQL Schema SQL */}
+      {/* TAB 3: PostgreSQL Schema SQL & Quick Patch */}
       {activeTab === 'sql' && (
-        <div className="bg-white rounded-lg border border-slate-200 shadow-2xs overflow-hidden">
-          <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900">Supabase SQL Migration Script</h2>
-              <p className="text-xs text-slate-500">Copy and paste this script into your Supabase SQL Editor to provision all tables & security rules</p>
+        <div className="space-y-6">
+          {/* Quick Patch Box */}
+          <div className="bg-amber-50 border border-amber-300 rounded-lg p-5 shadow-2xs">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+              <div>
+                <h3 className="text-sm font-black text-amber-950 flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-amber-600" />
+                  <span>1-Click Permissions & Schema Patch (Recommended)</span>
+                </h3>
+                <p className="text-xs text-amber-800 mt-0.5">
+                  If you already ran the initial tables script, copy and run this short patch in Supabase SQL Editor to instantly grant write permissions to Products & Suppliers and add any missing columns.
+                </p>
+              </div>
+              <button
+                onClick={handleCopyPatch}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs font-bold shadow-xs transition-colors"
+              >
+                {copiedPatch ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedPatch ? 'Copied Patch!' : 'Copy Quick Patch SQL'}</span>
+              </button>
             </div>
-            <button
-              onClick={handleCopySQL}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded text-xs font-bold shadow-xs transition-colors"
-            >
-              {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copied ? 'Copied to Clipboard!' : 'Copy Entire SQL'}</span>
-            </button>
+            <div className="p-3 bg-slate-900 text-amber-300 font-mono text-[11px] rounded overflow-x-auto max-h-44 select-all border border-amber-200">
+              <pre className="whitespace-pre">{SUPABASE_QUICK_PATCH_SQL}</pre>
+            </div>
           </div>
 
-          <div className="p-4 bg-slate-950 text-slate-200 font-mono text-[11px] overflow-x-auto max-h-[500px] select-all">
-            <pre className="whitespace-pre">{SUPABASE_SQL_SCHEMA}</pre>
+          {/* Full Master Script */}
+          <div className="bg-white rounded-lg border border-slate-200 shadow-2xs overflow-hidden">
+            <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-bold text-slate-900">Complete Master SQL Migration Script</h2>
+                <p className="text-xs text-slate-500">Full schema definition for creating all 12 tables, indexes, and full RLS policies from scratch</p>
+              </div>
+              <button
+                onClick={handleCopySQL}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded text-xs font-bold shadow-xs transition-colors"
+              >
+                {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copied ? 'Copied Entire SQL!' : 'Copy Full Schema SQL'}</span>
+              </button>
+            </div>
+
+            <div className="p-4 bg-slate-950 text-slate-200 font-mono text-[11px] overflow-x-auto max-h-[420px] select-all">
+              <pre className="whitespace-pre">{SUPABASE_SQL_SCHEMA}</pre>
+            </div>
           </div>
         </div>
       )}

@@ -90,9 +90,10 @@ CREATE TABLE IF NOT EXISTS sales (
     due_amount NUMERIC(12, 2) DEFAULT 0.00,
     empty_cylinders_received INTEGER DEFAULT 0,
     empty_received_items JSONB DEFAULT '[]'::jsonb,
-    status TEXT NOT NULL DEFAULT 'completed' CHECK (status IN ('completed', 'pending', 'cancelled')),
+    status TEXT NOT NULL DEFAULT 'completed' CHECK (status IN ('completed', 'pending', 'cancelled', 'partial', 'due', 'paid')),
     payment_method TEXT DEFAULT 'cash',
     account TEXT DEFAULT 'Cash in Hand',
+    godown TEXT DEFAULT 'Main Godown',
     delivery_type TEXT DEFAULT 'Depot Pickup',
     driver_name TEXT,
     vehicle_no TEXT,
@@ -212,6 +213,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_timestamp ON audit_logs(timestamp);
 -- ==============================================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ==============================================================================
+-- Enable RLS on all tables
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
@@ -225,32 +227,19 @@ ALTER TABLE financial_transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
 
--- Allow public read & auth write for initial setup / testing with Supabase Anon Key
-CREATE POLICY "Public Read Access" ON profiles FOR SELECT USING (true);
-CREATE POLICY "Public Read Access Products" ON products FOR SELECT USING (true);
-CREATE POLICY "Public Read Access Customers" ON customers FOR SELECT USING (true);
-CREATE POLICY "Public Read Access Suppliers" ON suppliers FOR SELECT USING (true);
-CREATE POLICY "Public Read Access Sales" ON sales FOR SELECT USING (true);
-CREATE POLICY "Public Read Access Purchases" ON purchases FOR SELECT USING (true);
-CREATE POLICY "Public Read Access Stock Movements" ON stock_movements FOR SELECT USING (true);
-CREATE POLICY "Public Read Access Receipts" ON money_receipts FOR SELECT USING (true);
-CREATE POLICY "Public Read Access Expenses" ON expenses FOR SELECT USING (true);
-CREATE POLICY "Public Read Access Transactions" ON financial_transactions FOR SELECT USING (true);
-CREATE POLICY "Public Read Access Audit" ON audit_logs FOR SELECT USING (true);
-CREATE POLICY "Public Read Access Settings" ON app_settings FOR SELECT USING (true);
-
--- Allow authenticated and anon inserts/updates for the POS and ERP
-CREATE POLICY "Allow Insert Sales" ON sales FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow Update Sales" ON sales FOR UPDATE USING (true);
-CREATE POLICY "Allow Insert Customers" ON customers FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow Update Customers" ON customers FOR UPDATE USING (true);
-CREATE POLICY "Allow Insert Stock Movements" ON stock_movements FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow Update Products Stock" ON products FOR UPDATE USING (true);
-CREATE POLICY "Allow Insert Money Receipts" ON money_receipts FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow Insert Expenses" ON expenses FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow Insert Transactions" ON financial_transactions FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow Insert Audit Logs" ON audit_logs FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow Upsert Settings" ON app_settings FOR ALL USING (true);
+-- Allow full read/write for all application tables (using anon key or authenticated roles)
+CREATE POLICY "Allow All on profiles" ON profiles FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on products" ON products FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on customers" ON customers FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on suppliers" ON suppliers FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on sales" ON sales FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on purchases" ON purchases FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on stock_movements" ON stock_movements FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on money_receipts" ON money_receipts FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on expenses" ON expenses FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on financial_transactions" ON financial_transactions FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on audit_logs" ON audit_logs FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All on app_settings" ON app_settings FOR ALL USING (true) WITH CHECK (true);
 
 -- ==============================================================================
 -- SEED INITIAL RBAC USERS

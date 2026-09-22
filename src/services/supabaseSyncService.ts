@@ -141,28 +141,34 @@ export const syncAllToSupabase = async (data: {
 
     // 5. Sales
     if (data.sales.length > 0) {
-      const formattedSales = data.sales.map(s => ({
-        id: s.id,
-        invoice_no: s.invoiceNo,
-        customer_id: s.customerId,
-        customer_name: s.customerName,
-        customer_phone: s.customerPhone,
-        customer_address: s.customerAddress,
-        items: s.items,
-        total_amount: s.subtotal,
-        discount: s.discount,
-        net_amount: s.grandTotal,
-        paid_amount: s.amountPaid,
-        due_amount: s.currentDue,
-        empty_cylinders_received: s.totalEmptyReceived,
-        empty_received_items: [],
-        status: s.status,
-        payment_method: s.paymentMethod,
-        godown: s.godown,
-        notes: s.notes || '',
-        created_by: s.salesperson,
-        created_at: s.createdAt,
-      }));
+      const formattedSales = data.sales.map(s => {
+        const allowedStatus = ['completed', 'pending', 'cancelled'].includes(s.status)
+          ? s.status
+          : (s.currentDue > 0 ? 'pending' : 'completed');
+
+        return {
+          id: s.id,
+          invoice_no: s.invoiceNo,
+          customer_id: s.customerId,
+          customer_name: s.customerName,
+          customer_phone: s.customerPhone,
+          customer_address: s.customerAddress,
+          items: s.items,
+          total_amount: s.subtotal,
+          discount: s.discount,
+          net_amount: s.grandTotal,
+          paid_amount: s.amountPaid,
+          due_amount: s.currentDue,
+          empty_cylinders_received: s.totalEmptyReceived,
+          empty_received_items: [],
+          status: allowedStatus,
+          payment_method: s.paymentMethod,
+          notes: s.notes || '',
+          created_by: s.salesperson,
+          created_at: s.createdAt,
+        };
+      });
+
       const { error: saleErr } = await supabase.from('sales').upsert(formattedSales, { onConflict: 'id' });
       if (saleErr) {
         errors.push(`sales: ${saleErr.message} (code: ${saleErr.code})`);
@@ -171,7 +177,105 @@ export const syncAllToSupabase = async (data: {
       }
     }
 
-    // 6. Settings
+    // 6. Purchases
+    if (data.purchases && data.purchases.length > 0) {
+      const formattedPurchases = data.purchases.map(p => ({
+        id: p.id,
+        purchase_no: p.purchaseNo,
+        supplier_id: p.supplierId,
+        supplier_name: p.supplierName,
+        supplier_invoice_ref: p.supplierInvoiceRef,
+        items: p.items,
+        total_amount: p.grandTotal,
+        paid_amount: p.paidAmount,
+        due_amount: p.dueAmount,
+        empty_cylinders_sent: p.totalEmptySent,
+        status: ['received', 'ordered', 'cancelled'].includes(p.status) ? p.status : 'received',
+        created_by: 'Admin',
+        created_at: p.createdAt || new Date().toISOString(),
+      }));
+
+      const { error: purchErr } = await supabase.from('purchases').upsert(formattedPurchases, { onConflict: 'id' });
+      if (purchErr) {
+        errors.push(`purchases: ${purchErr.message} (code: ${purchErr.code})`);
+      } else {
+        counts.purchases = formattedPurchases.length;
+      }
+    }
+
+    // 7. Stock Movements
+    if (data.stockMovements && data.stockMovements.length > 0) {
+      const formattedMovements = data.stockMovements.map(m => ({
+        id: m.id,
+        date: m.date,
+        product_id: m.productId,
+        product_name: `${m.brand} ${m.size}`,
+        brand: m.brand,
+        size: m.size,
+        movement_type: m.movementType,
+        full_qty: m.fullQty,
+        empty_qty: m.emptyQty,
+        reference: m.reference,
+        notes: m.notes,
+        created_by: m.user,
+        created_at: new Date().toISOString(),
+      }));
+
+      const { error: movErr } = await supabase.from('stock_movements').upsert(formattedMovements, { onConflict: 'id' });
+      if (movErr) {
+        errors.push(`stock_movements: ${movErr.message} (code: ${movErr.code})`);
+      } else {
+        counts.stockMovements = formattedMovements.length;
+      }
+    }
+
+    // 8. Money Receipts
+    if (data.moneyReceipts && data.moneyReceipts.length > 0) {
+      const formattedReceipts = data.moneyReceipts.map(r => ({
+        id: r.id,
+        receipt_no: r.receiptNo,
+        date: r.date,
+        customer_id: r.customerId,
+        customer_name: r.customerName,
+        amount: r.amount,
+        payment_method: r.paymentMethod,
+        account: r.account,
+        notes: r.notes || '',
+        received_by: 'Admin',
+        created_at: new Date().toISOString(),
+      }));
+
+      const { error: recErr } = await supabase.from('money_receipts').upsert(formattedReceipts, { onConflict: 'id' });
+      if (recErr) {
+        errors.push(`money_receipts: ${recErr.message} (code: ${recErr.code})`);
+      } else {
+        counts.moneyReceipts = formattedReceipts.length;
+      }
+    }
+
+    // 9. Expenses
+    if (data.expenses && data.expenses.length > 0) {
+      const formattedExpenses = data.expenses.map(e => ({
+        id: e.id,
+        voucher_no: e.voucherNo,
+        date: e.date,
+        category: e.category,
+        amount: e.amount,
+        paid_from: e.paymentAccount,
+        notes: e.description,
+        approved_by: e.enteredBy,
+        created_at: new Date().toISOString(),
+      }));
+
+      const { error: expErr } = await supabase.from('expenses').upsert(formattedExpenses, { onConflict: 'id' });
+      if (expErr) {
+        errors.push(`expenses: ${expErr.message} (code: ${expErr.code})`);
+      } else {
+        counts.expenses = formattedExpenses.length;
+      }
+    }
+
+    // 10. Settings
     const { error: settErr } = await supabase.from('app_settings').upsert({
       id: 'primary',
       settings: data.settings,
@@ -196,10 +300,12 @@ export const syncAllToSupabase = async (data: {
       };
     }
 
+    const errorTableNames = errors.map(e => e.split(':')[0]).join(', ');
     return {
       success: true,
-      message: `Successfully synchronized ${totalSynced} records across tables with Supabase!${errors.length > 0 ? ` Note: ${errors.length} tables had issues.` : ''}`,
+      message: `Successfully synchronized ${totalSynced} records to Supabase!${errors.length > 0 ? ` (Note: ${errors.length} tables need RLS write policies: ${errorTableNames})` : ''}`,
       syncedCounts: counts,
+      error: errors.length > 0 ? errors.join('; ') : undefined,
     };
   } catch (err: any) {
     return {
@@ -226,13 +332,23 @@ export const pullAllFromSupabase = async () => {
       { data: customers },
       { data: suppliers },
       { data: sales },
+      { data: purchases },
+      { data: stockMovements },
+      { data: moneyReceipts },
+      { data: expenses },
       { data: profiles },
+      { data: appSettings },
     ] = await Promise.all([
       supabase.from('products').select('*'),
       supabase.from('customers').select('*'),
       supabase.from('suppliers').select('*'),
       supabase.from('sales').select('*'),
+      supabase.from('purchases').select('*'),
+      supabase.from('stock_movements').select('*'),
+      supabase.from('money_receipts').select('*'),
+      supabase.from('expenses').select('*'),
       supabase.from('profiles').select('*'),
+      supabase.from('app_settings').select('*'),
     ]);
 
     return {
@@ -242,7 +358,12 @@ export const pullAllFromSupabase = async () => {
         customers: customers || [],
         suppliers: suppliers || [],
         sales: sales || [],
+        purchases: purchases || [],
+        stockMovements: stockMovements || [],
+        moneyReceipts: moneyReceipts || [],
+        expenses: expenses || [],
         profiles: profiles || [],
+        appSettings: appSettings?.[0]?.settings || null,
       },
     };
   } catch (err: any) {
