@@ -33,7 +33,8 @@ import {
   Globe,
   X,
   Bot,
-  Sparkles
+  Sparkles,
+  ExternalLink
 } from 'lucide-react';
 import { canAccessView, getRoleConfig } from '../../utils/rbac';
 import { LanguageToggle } from '../common/LanguageToggle';
@@ -225,7 +226,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <button
                       onClick={() => navigateTo('sales_list')}
                       className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                        isNavActive('sales_list')
+                        isNavActive('sales_list') || isNavActive('sales_invoice') || isNavActive('sales_invoices')
                           ? 'bg-orange-600 text-white'
                           : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                       }`}
@@ -736,6 +737,35 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-orange-400 text-xs">
                 {currentUser?.name.charAt(0) || 'U'}
               </div>
+            </div>
+          )}
+
+          {/* Makezaa Studio Credit */}
+          {showExpanded ? (
+            <div className="pt-2 mt-1 border-t border-slate-800/80 px-1 text-center">
+              <a
+                href="https://makezaa.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] text-slate-400 hover:text-orange-400 transition-colors inline-flex items-center gap-1 group"
+                title="Made by Makezaa Studio Inc."
+              >
+                <span>Made by</span>
+                <span className="font-semibold text-slate-300 group-hover:text-orange-300">Makezaa Studio Inc.</span>
+                <ExternalLink className="w-2.5 h-2.5 opacity-60 group-hover:opacity-100" />
+              </a>
+            </div>
+          ) : (
+            <div className="pt-1.5 flex justify-center">
+              <a
+                href="https://makezaa.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[9px] font-bold text-slate-500 hover:text-orange-400 transition-colors"
+                title="Made by Makezaa Studio Inc. (makezaa.com)"
+              >
+                MZ
+              </a>
             </div>
           )}
         </div>

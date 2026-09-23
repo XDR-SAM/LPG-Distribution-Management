@@ -1,46 +1,88 @@
 # LPG Manager BD 🇧🇩
 ### Next-Generation LPG Cylinder Distribution & Godown Management System
 
-![LPG Manager BD Hero Banner](./public/assets/images/lpg_dashboard_hero_1790171668160.jpg)
+> **A product engineered and developed by [Makezaa Studio Inc.](https://makezaa.com) ([makezaa.com](https://makezaa.com))**
 
-[![React](https://img.shields.io/badge/React-19.0.1-blue.svg)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-6.2-646CFF.svg)](https://vitejs.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-4.0-38B2AC.svg)](https://tailwindcss.com/)
-[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E.svg)](https://supabase.com/)
-[![Google Gemini](https://img.shields.io/badge/Gemini-3.5%20Flash-orange.svg)](https://ai.google.dev/)
+[![Crafted By Makezaa Studio](https://img.shields.io/badge/Developed%20By-Makezaa%20Studio%20Inc.-EA580C?style=for-the-badge)](https://makezaa.com)
+[![Website makezaa.com](https://img.shields.io/badge/Website-makezaa.com-0F172A?style=for-the-badge)](https://makezaa.com)
+
+[![React](https://img.shields.io/badge/React-19.0.1-61DAFB?style=flat&logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=flat&logo=typescript)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-6.2-646CFF?style=flat&logo=vite)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-4.0-38B2AC?style=flat&logo=tailwindcss)](https://tailwindcss.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=flat&logo=supabase)](https://supabase.com/)
+[![Google Gemini](https://img.shields.io/badge/Gemini-3.5%20Flash-orange?style=flat&logo=google)](https://ai.google.dev/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**LPG Manager BD** is a desktop-first, offline-capable Enterprise Resource Planning (ERP) suite engineered specifically for Liquefied Petroleum Gas (LPG) distributors, dealers, and godown operators across Bangladesh.
+---
 
-Built with real-time cylinder physical tracking, BERC (Bangladesh Energy Regulatory Commission) government tariff compliance, dual-currency/cylinder ledgers, multilingual Bengali/English support, and a database-aware **AI Godown Operations Agent** powered by Google Gemini and OpenAI-compatible models.
+## 🏢 About Makezaa Studio Inc.
+
+**LPG Manager BD** is conceptualized, designed, and developed by **Makezaa Studio Inc.** ([makezaa.com](https://makezaa.com)). Makezaa Studio specializes in creating high-performance, domain-specific enterprise software, ERP platforms, and AI-automated tooling tailored for mission-critical industry operations.
 
 ---
 
-## 📸 Interface Previews
+## 📋 System Overview
 
-### 1. Operations Dashboard & Godown Inventory
-Live visibility into full cylinders, empty cylinder stock returned by retailers, damaged/leaking cylinders, cashbook reserves, and daily sales metrics.
+**LPG Manager BD** is a desktop-first, offline-resilient Enterprise Resource Planning (ERP) suite engineered specifically for Liquefied Petroleum Gas (LPG) distributors, regional dealers, and godown operators across Bangladesh.
 
-![LPG Dashboard](./public/assets/images/lpg_dashboard_hero_1790171668160.jpg)
-
-### 2. AI Godown Operations Agent
-Chat with an intelligent godown assistant that has real-time awareness of your inventory and financial ledger. Issue plain English or Bengali commands to automatically record sales, receive empties, log expenses, and update stock in 1 click.
-
-![AI Godown Assistant](./public/assets/images/lpg_ai_agent_preview_1790171684550.jpg)
+Built with real-time cylinder physical tracking, BERC (Bangladesh Energy Regulatory Commission) government tariff compliance, dual-ledger accounting (Cash + Physical Cylinders), bilingual Bengali/English interfaces, and a database-aware **AI Godown Operations Agent** powered by Google Gemini and OpenAI-compatible models.
 
 ---
 
-## 🌟 Key Features
+## 🏗️ System Architecture & Workflow Diagram
+
+```
++-----------------------------------------------------------------------------------+
+|                              LPG MANAGER BD (ERP)                                 |
+|                         Engineered by Makezaa Studio Inc.                         |
++-----------------------------------------------------------------------------------+
+                                        |
+       +--------------------------------+--------------------------------+
+       |                                |                                |
+       v                                v                                v
++-------------------+          +-------------------+          +---------------------+
+|   SALES & POS     |          |  CYLINDER LEDGER  |          |   ACCOUNTS & CASH   |
+| - Counter POS     |          | - Full Stock (In) |          | - Cash in Hand      |
+| - Dealer Billing  | <======> | - Empty Stock     | <======> | - bKash / Nagad     |
+| - Delivery Challan|          | - Damaged / Lost  |          | - Bank Accounts     |
+| - BERC Compliance |          | - Customer Due    |          | - Expense Vouchers  |
++-------------------+          +-------------------+          +---------------------+
+       ^                                ^                                ^
+       |                                |                                |
+       +--------------------------------+--------------------------------+
+                                        |
+                                        v
++-----------------------------------------------------------------------------------+
+|                      AI GODOWN OPERATIONS AGENT (AGENTIC AI)                      |
+|                      Powered by Gemini 3.5 & OpenAI Protocol                      |
+|                                                                                   |
+|  * Real-Time Godown Database Snapshot (Stocks, Dues, Cashbook, Sales)             |
+|  * Natural Language Commands (Bangla / Banglish / English)                        |
+|  * 1-Click Database Mutations (Auto-creates Invoices, Receipts, & Stock Moves)    |
++-----------------------------------------------------------------------------------+
+                                        |
+        +-------------------------------+-------------------------------+
+        |                                                               |
+        v                                                               v
++------------------------------------+          +-----------------------------------+
+|       OFFLINE LOCALSTORAGE         |          |       SUPABASE POSTGRESQL         |
+|   Zero downtime during outages     | <======> |   Cloud synchronization & backup  |
++------------------------------------+          +-----------------------------------+
+```
+
+---
+
+## 🌟 Key Features & Capabilities
 
 ### 1. 🔄 Dual-Ledger Cylinder Tracking
-In the LPG industry, a sale is never just financial—every cylinder leaves with gas and must return empty. LPG Manager BD tracks both sides:
-- **Cash Ledger:** Invoice amount, payments (Cash, bKash, Nagad, Bank), and customer accounts receivable.
-- **Cylinder Physical Ledger:** Full cylinders issued vs. Empty cylinders returned vs. Deposit/Due cylinders held by customers and suppliers.
-- **Stock States:** Track `Full Stock`, `Empty Stock`, `Damaged Stock`, `Lost Stock`, `Customer-Held Stock`, and `Supplier-Held Stock`.
+In the LPG industry, a sale is never purely financial—cylinders are reusable physical assets that leave filled and must return empty:
+- **Financial Ledger:** Invoicing amounts, payment collection (Cash, bKash, Nagad, Bank Transfer), customer credit limits, and aging accounts receivable.
+- **Physical Cylinder Ledger:** Full cylinders issued vs. empty cylinders returned vs. cylinders currently held on deposit/due by retailers and consumers.
+- **Stock States:** Track `Full Stock`, `Empty Stock`, `Damaged / Leaking Stock`, `Lost / Condemned Stock`, `Customer-Held Stock`, and `Supplier-Held Stock`.
 
-### 2. 🇧🇩 Bangladesh LPG Market Native
-- **Multi-Brand Compatibility:** Preconfigured for all major operators in Bangladesh:
+### 2. 🇧🇩 Native to the Bangladesh LPG Market
+- **Multi-Brand Support:** Out-of-the-box configuration for all major gas operators licensed in Bangladesh:
   - **Bashundhara LP Gas**
   - **Omera LPG**
   - **Beximco LPG**
@@ -51,62 +93,63 @@ In the LPG industry, a sale is never just financial—every cylinder leaves with
   - **Petromax LPG**
   - **Sena Kalyan LPG**
   - **Promita LPG**
-- **Cylinder Sizes:** Domestic 12kg, Commercial 35kg, Industrial 45kg, plus auto-gas and small sizes (5.5kg).
-- **BERC Tariff Compliance:** Track monthly government-notified BERC benchmark consumer prices vs. dealer purchase cost to monitor distributor profit margins.
+- **Cylinder Sizes:** Domestic 12kg, Commercial 35kg, Industrial 45kg, plus auto-gas and compact 5.5kg sizes.
+- **BERC Tariff Compliance:** Track monthly government-notified Bangladesh Energy Regulatory Commission (BERC) retail benchmark rates against purchase costs to monitor profit margins.
 
 ### 3. 🤖 Database-Aware AI Godown Operations Agent
-- **Natural Language Execution:** Execute complex operations by speaking or typing naturally:
+- **Live State Awareness:** Injects a live snapshot of godown inventory, customer dues, and cash balances into every conversation turn.
+- **Natural Language Execution:** Execute full transactions directly via chat:
   - *"Sell 5 Bashundhara 12kg cylinders to Kalam Store for 7000 cash with 5 empties exchanged."*
   - *"Receive 10,000 tk payment from Bismillah Hotel via bKash."*
   - *"Mark 2 Omera 12kg cylinders as damaged due to pinhole leak."*
   - *"Record 1,500 tk transport fuel expense for vehicle TA-11-1234."*
-- **Real-Time Database Snapshot:** Injects current stock levels, customer balances, and cashbook status into every conversation turn.
-- **Interactive Action Cards:** Displays structured transaction preview cards with deep-links to View / Print Invoices (`INV-2026-xxxx`), Money Receipts (`MR-2026-xxxx`), and Stock Movement logs.
+- **Action Execution Cards:** Auto-generates structured confirmation cards with 1-click deep links to View / Print Invoices (`INV-2026-xxxx`), Money Receipts (`MR-2026-xxxx`), and Stock Movements.
 - **Multi-LLM Provider Switching (In Settings):**
-  - **Google Gemini:** `gemini-3.5-flash` (default), `gemini-3.1-flash-lite` (rapid lookups), `gemini-3.1-pro-preview` (audits & reconciliation). Zero client-side API key leakage.
-  - **OpenAI-Compatible Providers:** Connect to OpenAI (ChatGPT `gpt-4o`, `gpt-4o-mini`), Groq, DeepSeek, or local Ollama with custom endpoints and API keys.
-- **Rich Markdown Formatting:** Tables, numbered steps, code fences with 1-click copy, and bold highlighted metrics.
-- **Floating Assistant:** Global slide-over assistant drawer accessible from any screen without interrupting your active workflow.
+  - **Google Gemini:** `gemini-3.5-flash` (Default), `gemini-3.1-flash-lite` (High speed), `gemini-3.1-pro-preview` (Audits). Proxied securely on the backend server.
+  - **OpenAI-Compatible Providers:** Plug in OpenAI (ChatGPT `gpt-4o`, `gpt-4o-mini`), Groq, DeepSeek, or local Ollama instances with custom Base URLs and API keys.
+- **Rich Markdown Formatting:** Real-time rendering of headings, data tables, bullet points, and code blocks with 1-click copy buttons.
+- **Floating Assistant:** Global slide-over drawer accessible from any screen without navigating away.
 
 ### 4. 🧾 Point of Sale (POS) & Billing
-- **Instant Invoicing:** Generate professional sales invoices with customer type detection (Dealer, Retail Shop, Hotel, Commercial).
-- **Print Formats:**
+- **Instant Invoicing:** Multi-tier pricing by customer category (Dealer, Retail Shop, Hotel / Restaurant, Commercial).
+- **Print Templates:**
   - Standard **A4 Office Invoice** with BERC license, BIN, and distributor details.
   - **80mm POS Thermal Slip** for fast counter receipts.
-  - **Delivery Challan (`DC-2026-xxxx`)** for drivers with vehicle number and empty collection targets.
-- **Flexible Settlement:** Full Exchange (1:1), Partial Exchange (Empty Due), Cylinder Deposit (`৳2,200` standard), or Permanent Sale.
+  - **Delivery Challan (`DC-2026-xxxx`)** for drivers with vehicle numbers and empty collection targets.
+- **Flexible Settlement Modes:** Full Exchange (1:1), Partial Exchange (Empty Due), Cylinder Deposit (`৳2,200`), or Sold Permanently.
 
 ### 5. 👥 Customers & Suppliers Management
-- **Customer Profiles:** Credit limits, payment terms, phone numbers, delivery areas (Mohammadpur, Mirpur, Dhanmondi, etc.), and outstanding cylinder holding counts.
-- **Supplier Ledger:** Manage orders, empty returns to plant, and payable balances for gas bottling companies.
+- **Customer Profiles:** Area mapping (Mohammadpur, Mirpur, Dhanmondi, etc.), credit limits, phone numbers, and physical cylinder balances.
+- **Supplier Ledger:** Manage orders from LPG bottling plants, empty returns dispatched to plant, and payable balances.
 
 ### 6. 💰 Accounts & Daily Cashbook
-- **Accounts:** Separate balances for **Cash in Hand**, **bKash Merchant**, **Nagad**, and **Bank Accounts**.
+- **Accounts:** Live balances for **Cash in Hand**, **bKash Merchant**, **Nagad**, and **Bank Accounts**.
 - **Money Receipts (`MR`):** Auto-generated on customer payment collection.
 - **Expense Vouchers (`EV`):** Track godown rent, driver tips, vehicle diesel/CNG, labor handling charges, and maintenance.
 
 ### 7. 🔐 Role-Based Access Control (RBAC)
-Dedicated permissions and views tailored to godown personnel:
-| Role | Permissions |
+Tailored permissions and access boundaries for godown personnel:
+
+| Role | Permissions & Access |
 |---|---|
-| **Admin / Owner** | Full system control, financial reports, user management, audit logs, AI settings, Supabase sync |
-| **Manager** | Sales, purchases, customer credit approvals, price overrides, godown audits |
+| **Super Admin** | Full unrestricted system control, financial margins, settings, audit logs, AI settings, Supabase sync |
+| **Manager** | Sales, purchases, customer credit limit overrides, cylinder audit reconciliation, reports |
 | **Accountant** | Invoicing, payment collection, money receipts, expense vouchers, cashbook reconciliation |
 | **Store Keeper** | Cylinder stock in/out, empty returns, damaged cylinder reporting, godown physical counts |
-| **Sales Rep** | New orders, customer ledger check, godown pickup billing |
-| **Delivery Driver** | Delivery challans view, empty collection confirmation |
+| **Sales Operator** | Counter POS sales, customer ledger search, godown pickup billing |
+| **Delivery Staff** | Delivery challans view, empty collection confirmation |
 
 ### 8. 🌐 Bilingual Localization & Offline First
-- **Languages:** Instant toggle between English and Bengali (**বাংলা**) across all views, tables, receipts, and menus.
+- **Languages:** Seamless 1-click toggle between English and Bengali (**বাংলা**) across all views, tables, and print templates.
 - **Offline First:** Operates smoothly on local machine storage (`localStorage`) during internet outages, syncing automatically to Supabase PostgreSQL when reconnected.
-- **Data Export & Import:** One-click manual backup of the entire database into **JSON** or **CSV** formats in **Settings > Backup & Export**.
+- **Data Export & Import:** Manual backups of the entire database into **JSON** or **CSV** formats in **Settings > Data Backup & Export**.
 
 ---
 
 ## 🛠️ Tech Stack & Architecture
 
 - **Frontend:** React 19, TypeScript, Vite 6, Tailwind CSS 4
-- **Backend / Proxy:** Node.js Express (`server.ts`) running concurrently with Vite dev server
+- **Backend Server / Proxy:** Node.js Express (`server.ts`) running concurrently with Vite dev server
 - **Database & Auth:** Supabase PostgreSQL with Row Level Security (RLS) + LocalStorage Fallback
 - **AI Engine:** `@google/genai` TypeScript SDK (server-side proxied) & OpenAI-compatible REST proxy
 - **Icons & Visualization:** Lucide React, Recharts
@@ -163,7 +206,7 @@ npm run build
 
 ## ☁️ Deployment on Vercel
 
-The project is preconfigured for zero-friction deployment to Vercel via `vercel.json`.
+The project is preconfigured for deployment to Vercel via `vercel.json`.
 
 1. Push your repository to GitHub or GitLab.
 2. In the [Vercel Dashboard](https://vercel.com/), click **Add New > Project** and import the repository.
@@ -183,7 +226,7 @@ The project is preconfigured for zero-friction deployment to Vercel via `vercel.
 
 ### 1. Morning Routine: Godown Physical Audit
 1. Open **Reports > Daily Cylinder Audit**.
-2. Verify morning opening full cylinders against the physical stack.
+2. Verify morning opening full cylinders against the physical stack in the godown.
 3. Check previous day cash balance in **Accounts > Cashbook**.
 
 ### 2. Counter Sales & Retail Deliveries
@@ -204,7 +247,7 @@ Click the **AI Agent** button in the TopBar or use the Floating Widget in the bo
 ### 4. Evening Settlement
 1. Open **Reports > Daily Report**.
 2. Review Total Cylinders Sold, Total Empties Collected, Total Cash Collected, and Pending Deliveries.
-3. Take a manual backup via **Settings > Backup & Export** (Export JSON).
+3. Take a manual backup via **Settings > Data Backup & Export** (Export JSON).
 
 ---
 
@@ -221,10 +264,20 @@ Click the **AI Agent** button in the TopBar or use the Floating Widget in the bo
 
 ---
 
+## 👨‍💻 Credits & Product Attribution
+
+This product is proudly developed, engineered, and maintained by:
+
+### **Makezaa Studio Inc.**
+- 🌐 **Website:** [makezaa.com](https://makezaa.com)
+- 🏢 **Company:** Makezaa Studio Inc.
+- 💡 **Specialization:** High-performance Enterprise ERPs, Domain Systems, and AI Agent Solutions.
+
+---
+
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
-
-**Developed with ❤️ for the LPG Distribution Community of Bangladesh.**
+**Made with pride by Makezaa Studio Inc. ([makezaa.com](https://makezaa.com)) for the LPG Distribution Industry.**

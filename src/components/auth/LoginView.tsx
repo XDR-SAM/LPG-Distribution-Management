@@ -257,6 +257,19 @@ export const LoginView: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Product Attribution Credit */}
+        <div className="mt-6 pt-4 border-t border-slate-700/60 text-center text-xs text-slate-400">
+          <span>Made by </span>
+          <a
+            href="https://makezaa.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-orange-400 hover:text-orange-300 font-semibold underline underline-offset-2 transition-colors"
+          >
+            Makezaa Studio Inc. (makezaa.com)
+          </a>
+        </div>
       </div>
     </div>
   );

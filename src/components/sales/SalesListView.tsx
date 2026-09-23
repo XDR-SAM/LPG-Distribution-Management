@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { PaymentStatusBadge, CylinderDueBadge } from '../common/Badge';
-import { formatBDT, formatDate } from '../../utils/formatters';
 import { Sale } from '../../types';
 import { RoleGate } from '../common/RoleGate';
 import {
@@ -46,7 +45,9 @@ export const SalesListView: React.FC = () => {
 
   // Filter logic
   const term = (searchTerm || '').toLowerCase();
-  const filteredSales = sales.filter(s => {
+  const safeSales = sales || [];
+  const filteredSales = safeSales.filter(s => {
+    if (!s) return false;
     const matchesSearch =
       (s.invoiceNo || '').toLowerCase().includes(term) ||
       (s.customerName || '').toLowerCase().includes(term) ||
@@ -134,9 +135,9 @@ export const SalesListView: React.FC = () => {
 
         <div className="text-slate-500 font-medium">
           {language === 'bn' ? (
-            <>মোট <strong>{formatQty(sales.length)}</strong> টির মধ্যে <strong>{formatQty(filteredSales.length)}</strong> টি প্রদর্শিত</>
+            <>মোট <strong>{formatQty(safeSales.length)}</strong> টির মধ্যে <strong>{formatQty(filteredSales.length)}</strong> টি প্রদর্শিত</>
           ) : (
-            <>Showing <strong>{filteredSales.length}</strong> of <strong>{sales.length}</strong> invoices</>
+            <>Showing <strong>{filteredSales.length}</strong> of <strong>{safeSales.length}</strong> invoices</>
           )}
         </div>
       </div>
@@ -170,7 +171,7 @@ export const SalesListView: React.FC = () => {
                 </tr>
               ) : (
                 filteredSales.map(sale => {
-                  const saleDue = sale.grandTotal - sale.amountPaid;
+                  const saleDue = (sale.grandTotal || 0) - (sale.amountPaid || 0);
 
                   return (
                     <tr
@@ -184,7 +185,7 @@ export const SalesListView: React.FC = () => {
                       </td>
 
                       <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">
-                        {formatDate(sale.date)}
+                        {formatDate ? formatDate(sale.date) : sale.date}
                       </td>
 
                       <td className="px-3 py-2.5">
@@ -282,7 +283,7 @@ export const SalesListView: React.FC = () => {
                   {t('sales.sale_details')} - {selectedSaleDetails.invoiceNo}
                 </h3>
                 <p className="text-[11px] text-slate-500">
-                  {selectedSaleDetails.customerName} · {formatDate(selectedSaleDetails.date)} ({toBnNum(selectedSaleDetails.createdAt)})
+                  {selectedSaleDetails.customerName} · {formatDate ? formatDate(selectedSaleDetails.date) : selectedSaleDetails.date} ({toBnNum ? toBnNum(selectedSaleDetails.createdAt) : selectedSaleDetails.createdAt})
                 </p>
               </div>
               <button

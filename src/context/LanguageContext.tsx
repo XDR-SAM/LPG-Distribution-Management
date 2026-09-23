@@ -11,6 +11,7 @@ interface LanguageContextType {
   formatCurrency: (amount: number | null | undefined, forceBanglaDigits?: boolean) => string;
   formatQty: (num: number | null | undefined, forceBanglaDigits?: boolean) => string;
   formatDisplayDate: (dateStr: string | Date | null | undefined) => string;
+  formatDate: (dateStr: string | Date | null | undefined) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -117,6 +118,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         formatCurrency,
         formatQty,
         formatDisplayDate,
+        formatDate: formatDisplayDate,
       }}
     >
       {children}

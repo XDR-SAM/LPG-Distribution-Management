@@ -113,6 +113,7 @@ interface AppContextType {
   formatCurrency: (amount: number | null | undefined, forceBanglaDigits?: boolean) => string;
   formatQty: (num: number | null | undefined, forceBanglaDigits?: boolean) => string;
   formatDisplayDate: (dateStr: string | Date | null | undefined) => string;
+  formatDate: (dateStr: string | Date | null | undefined) => string;
 
   currentUser: User | null;
   setCurrentUser: (user: User | null) => void;
@@ -1485,6 +1486,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         formatCurrency: lang.formatCurrency,
         formatQty: lang.formatQty,
         formatDisplayDate: lang.formatDisplayDate,
+        formatDate: lang.formatDisplayDate,
       }}
     >
       {children}

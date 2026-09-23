@@ -19,7 +19,7 @@ import {
 import { BackupExportPanel } from './BackupExportPanel';
 import { RestoreImportPanel } from './RestoreImportPanel';
 import { AIAgentSettingsPanel } from './AIAgentSettingsPanel';
-import { Bot, Sparkles } from 'lucide-react';
+import { Bot, Sparkles, ExternalLink } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
   const { t, settings, updateSettings, customers, products, sales } = useApp();
@@ -351,6 +351,36 @@ export const SettingsView: React.FC = () => {
           </div>
         </form>
       )}
+
+      {/* Product Credits & Attribution Card */}
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-5 text-white shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-orange-600/20 border border-orange-500/40 flex items-center justify-center font-black text-orange-400 text-sm shrink-0">
+            MZ
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-black text-sm text-white">LPG Manager BD</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 font-bold border border-orange-500/30">
+                Enterprise v1.2
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
+              This product was designed & developed by <span className="font-semibold text-slate-200">Makezaa Studio Inc.</span>
+            </p>
+          </div>
+        </div>
+
+        <a
+          href="https://makezaa.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-orange-400 hover:text-orange-300 font-bold text-xs transition-colors shrink-0"
+        >
+          <span>makezaa.com</span>
+          <ExternalLink className="w-3.5 h-3.5" />
+        </a>
+      </div>
     </div>
   );
 };

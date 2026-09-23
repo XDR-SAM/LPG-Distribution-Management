@@ -72,6 +72,10 @@ const MainContent: React.FC = () => {
       case 'sales_new':
         return <NewSaleView />;
       case 'sales_list':
+      case 'sales_invoice':
+      case 'sales_invoices':
+      case 'sales':
+      case 'invoices':
         return <SalesListView />;
       case 'sales_challan':
       case 'sales_challans':
