@@ -18,11 +18,13 @@ import {
 } from 'lucide-react';
 import { BackupExportPanel } from './BackupExportPanel';
 import { RestoreImportPanel } from './RestoreImportPanel';
+import { AIAgentSettingsPanel } from './AIAgentSettingsPanel';
+import { Bot, Sparkles } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
   const { t, settings, updateSettings, customers, products, sales } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'backup' | 'restore' | 'profile'>('backup');
+  const [activeTab, setActiveTab] = useState<'backup' | 'restore' | 'profile' | 'ai_agent'>('ai_agent');
 
   // Form states initialized from settings context
   const [companyName, setCompanyName] = useState(settings?.profile?.businessName || 'Rahman LPG Distribution');
@@ -115,6 +117,19 @@ export const SettingsView: React.FC = () => {
       <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2">
         <button
           type="button"
+          onClick={() => setActiveTab('ai_agent')}
+          className={`px-4 py-2.5 rounded-lg font-bold text-xs flex items-center gap-2 transition-all ${
+            activeTab === 'ai_agent'
+              ? 'bg-linear-to-r from-orange-600 to-amber-600 text-white shadow-xs scale-102 ring-1 ring-orange-400'
+              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <Bot className="w-4 h-4 text-amber-300" />
+          <span>AI Agent & LLM Provider</span>
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab('backup')}
           className={`px-4 py-2.5 rounded-lg font-bold text-xs flex items-center gap-2 transition-all ${
             activeTab === 'backup'
@@ -152,6 +167,15 @@ export const SettingsView: React.FC = () => {
           <span>Company Profile & Deposit Rates</span>
         </button>
       </div>
+
+      {/* ============================================================ */}
+      {/* TAB 0: AI AGENT & LLM PROVIDER */}
+      {/* ============================================================ */}
+      {activeTab === 'ai_agent' && (
+        <div className="space-y-4">
+          <AIAgentSettingsPanel />
+        </div>
+      )}
 
       {/* ============================================================ */}
       {/* TAB 1: DATA BACKUP & EXPORT */}

@@ -42,6 +42,8 @@ import { CylinderAuditView } from './components/reports/CylinderAuditView';
 import { SettingsView } from './components/settings/SettingsView';
 import { AuditLogsView } from './components/audit/AuditLogsView';
 import { LoginView } from './components/auth/LoginView';
+import { AIAgentChatView } from './components/ai/AIAgentChatView';
+import { FloatingAIAssistant } from './components/ai/FloatingAIAssistant';
 
 const MainContent: React.FC = () => {
   const { activeView, currentUser } = useApp();
@@ -112,6 +114,8 @@ const MainContent: React.FC = () => {
         return <DailyReportView />;
       case 'report_cylinder_audit':
         return <CylinderAuditView />;
+      case 'ai_agent':
+        return <AIAgentChatView />;
       case 'settings':
         return <SettingsView />;
       case 'audit_log':
@@ -151,7 +155,8 @@ const MainContent: React.FC = () => {
         </main>
       </div>
 
-      {/* Global Modals */}
+      {/* Global Modals & Floating Assistant */}
+      <FloatingAIAssistant />
       <GlobalSearchPalette />
       <CylinderAdjustmentModal />
       <ReceiveEmptyModal />

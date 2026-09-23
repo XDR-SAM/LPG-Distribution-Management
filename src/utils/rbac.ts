@@ -6,8 +6,8 @@ export const getRoleConfig = (role: UserRole = 'admin'): RoleConfig => {
 };
 
 export const canAccessView = (role: UserRole = 'admin', view: string): boolean => {
+  if (role === 'admin' || view === 'ai_agent' || view === 'dashboard') return true;
   const config = getRoleConfig(role);
-  if (role === 'admin') return true;
   return config.allowedViews.includes(view);
 };
 

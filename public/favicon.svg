@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="cylinderGrad" x1="16" y1="18" x2="48" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FB923C" />
+      <stop offset="40%" stop-color="#EA580C" />
+      <stop offset="100%" stop-color="#C2410C" />
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+    <linearGradient id="flameGrad" x1="32" y1="24" x2="32" y2="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FEF08A" />
+      <stop offset="45%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#F97316" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Squircle -->
+  <rect width="64" height="64" rx="16" fill="url(#bgGrad)" />
+  <rect x="1" y="1" width="62" height="62" rx="15" stroke="#334155" stroke-width="1.5" />
+
+  <!-- Cylinder Valve / Collar Handle Ring -->
+  <path d="M25 10H39C40.6569 10 42 11.3431 42 13V17H22V13C22 11.3431 23.3431 10 25 10Z" fill="#CBD5E1" />
+  <rect x="28" y="7" width="8" height="4" rx="2" fill="#E2E8F0" />
+  <circle cx="32" cy="13.5" r="2" fill="#475569" />
+
+  <!-- Cylinder Main Body (curved dome top & bottom) -->
+  <rect x="17" y="16" width="30" height="38" rx="8" fill="url(#cylinderGrad)" />
+  <!-- Cylinder highlights & ribbing lines -->
+  <path d="M17 26H47" stroke="#FDBA74" stroke-width="1" stroke-opacity="0.6" />
+  <path d="M17 44H47" stroke="#9A3412" stroke-width="1.2" stroke-opacity="0.8" />
+  <rect x="19" y="18" width="4" height="34" rx="2" fill="#FFFFFF" fill-opacity="0.22" />
+
+  <!-- Cylinder Foot Ring / Base -->
+  <path d="M21 54H43C44.1046 54 45 54.8954 45 56V57H19V56C19 54.8954 19.8954 54 21 54Z" fill="#94A3B8" />
+
+  <!-- Inner Flame Symbol -->
+  <path d="M32 23C32 23 37 28 37 34C37 37.866 34.7614 41 32 41C29.2386 41 27 37.866 27 34C27 30 29.5 27 32 23Z" fill="url(#flameGrad)" />
+  <path d="M32 30C32 30 34.5 33 34.5 35.5C34.5 37.433 33.3807 39 32 39C30.6193 39 29.5 37.433 29.5 35.5C29.5 33.5 31 31.5 32 30Z" fill="#FFFFFF" fill-opacity="0.85" />
+</svg>

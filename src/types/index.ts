@@ -482,4 +482,56 @@ export interface AppSettings {
   creditLimitWarningPercent: number;
   financialYear: string;
   lastBackupTime: string;
+  aiSettings?: AISettings;
 }
+
+export type LLMProvider = 'gemini' | 'openai';
+
+export type GeminiModel = 
+  | 'gemini-3.5-flash' 
+  | 'gemini-3.1-pro-preview' 
+  | 'gemini-3.1-flash-lite';
+
+export interface AISettings {
+  provider: LLMProvider;
+  geminiModel: GeminiModel;
+  openaiConfig: {
+    baseUrl: string;
+    apiKey: string;
+    model: string;
+  };
+  agentRole: string;
+  autoExecuteActions: boolean;
+  systemInstructionCustom?: string;
+}
+
+export type AgentActionType = 
+  | 'CREATE_SALE' 
+  | 'RECEIVE_PAYMENT' 
+  | 'ADJUST_STOCK' 
+  | 'RECEIVE_EMPTY' 
+  | 'ADD_EXPENSE' 
+  | 'ADD_CUSTOMER' 
+  | 'MAKE_SUPPLIER_PAYMENT'
+  | 'SEND_EMPTY_SUPPLIER';
+
+export interface AgentAction {
+  id: string;
+  type: AgentActionType;
+  params: Record<string, any>;
+  status: 'pending' | 'executed' | 'failed';
+  resultMessage?: string;
+  resultData?: Record<string, any>;
+  executedAt?: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: string;
+  modelUsed?: string;
+  providerUsed?: LLMProvider;
+  action?: AgentAction;
+}
+

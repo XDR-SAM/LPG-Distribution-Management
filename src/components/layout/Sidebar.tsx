@@ -31,7 +31,9 @@ import {
   Database,
   RefreshCw,
   Globe,
-  X
+  X,
+  Bot,
+  Sparkles
 } from 'lucide-react';
 import { canAccessView, getRoleConfig } from '../../utils/rbac';
 import { LanguageToggle } from '../common/LanguageToggle';
@@ -161,6 +163,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <LayoutDashboard className="w-4 h-4 shrink-0" />
             {showExpanded && <span className="truncate">{t('nav.dashboard')}</span>}
+          </button>
+
+          {/* AI Godown Operations Agent */}
+          <button
+            onClick={() => navigateTo('ai_agent')}
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-md font-semibold transition-colors group ${
+              isNavActive('ai_agent')
+                ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-xs'
+                : 'text-amber-400 hover:bg-amber-950/40 hover:text-amber-300 border border-amber-500/20'
+            }`}
+            title="AI Godown Operations Agent"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <Bot className="w-4 h-4 shrink-0 text-amber-400 group-hover:scale-110 transition-transform" />
+              {showExpanded && <span className="truncate">AI Godown Agent</span>}
+            </div>
+            {showExpanded && (
+              <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                Agent
+              </span>
+            )}
           </button>
 
           {/* Sales Section */}

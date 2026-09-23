@@ -49,6 +49,17 @@ export const INITIAL_SETTINGS: AppSettings = {
   creditLimitWarningPercent: 80,
   financialYear: '2026-2027 (July - June)',
   lastBackupTime: 'Today, 08:30 PM',
+  aiSettings: {
+    provider: 'gemini',
+    geminiModel: 'gemini-3.5-flash',
+    openaiConfig: {
+      baseUrl: 'https://api.openai.com/v1',
+      apiKey: '',
+      model: 'gpt-4o-mini',
+    },
+    agentRole: 'Senior Godown Operations Manager & Database Agent for Bangladesh LPG distribution business.',
+    autoExecuteActions: true,
+  },
 };
 
 export const INITIAL_USERS: User[] = [

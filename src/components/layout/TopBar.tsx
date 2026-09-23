@@ -23,7 +23,8 @@ import {
   Database,
   ShieldCheck,
   UserCheck,
-  RefreshCw
+  RefreshCw,
+  Bot
 } from 'lucide-react';
 import { canPerform, getRoleConfig, getRoleDisplayName } from '../../utils/rbac';
 import { isSupabaseConfigured } from '../../lib/supabase';
@@ -157,6 +158,17 @@ export const TopBar: React.FC<TopBarProps> = ({
 
         {/* Global Language Toggle Switch */}
         <LanguageToggle variant="pill" />
+
+        {/* AI Agent Quick Trigger Button */}
+        <button
+          onClick={() => setActiveView('ai_agent')}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 transition-colors shadow-2xs"
+          title="Open AI Godown Operations Agent"
+        >
+          <Bot className="w-3.5 h-3.5 text-amber-600" />
+          <span className="hidden md:inline">AI Agent</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        </button>
 
         {/* Supabase Status Pill */}
         <button
