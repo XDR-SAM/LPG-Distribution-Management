@@ -24,12 +24,14 @@ import {
   Settings,
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   PackageCheck,
   Flame,
   UserCheck,
   Database,
   RefreshCw,
-  Globe
+  Globe,
+  X
 } from 'lucide-react';
 import { canAccessView, getRoleConfig } from '../../utils/rbac';
 import { LanguageToggle } from '../common/LanguageToggle';
@@ -47,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   mobileOpen = false,
   setMobileOpen = (_o?: boolean) => {},
 }) => {
-  const { activeView, setActiveView, currentUser, t, language } = useApp();
+  const { activeView, setActiveView, currentUser, settings, t, language } = useApp();
   const currentRole = currentUser?.role || 'admin';
   const roleConfig = getRoleConfig(currentRole);
 
@@ -71,6 +73,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const isNavActive = (view: string) => activeView === view;
+  const isCompact = collapsed && !mobileOpen;
+  const showExpanded = !isCompact;
 
   // RBAC Filter checks
   const canView = (view: string) => canAccessView(currentRole, view);
@@ -95,30 +99,52 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 bg-[#0F172A] text-slate-200 border-r border-slate-800 flex flex-col transition-all duration-200 ${
-          collapsed ? 'w-16' : 'w-64'
-        } ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+        className={`fixed inset-y-0 left-0 z-50 bg-[#0F172A] text-slate-200 border-r border-slate-800 flex flex-col transition-all duration-300 ease-in-out lg:static lg:z-auto lg:h-full shrink-0 ${
+          isCompact ? 'w-16' : 'w-72 sm:w-80 lg:w-64 max-w-[85vw]'
+        } ${mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}`}
       >
         {/* Brand Header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800 shrink-0 bg-slate-950">
+        <div className="h-14 lg:h-16 flex items-center justify-between px-3.5 border-b border-slate-800 shrink-0 bg-slate-950">
           <div
-            className="flex items-center gap-2.5 cursor-pointer overflow-hidden"
+            className="flex items-center gap-2.5 cursor-pointer overflow-hidden min-w-0"
             onClick={() => navigateTo('dashboard')}
           >
             <div className="w-9 h-9 rounded-lg bg-orange-600 flex items-center justify-center text-white shadow-xs shrink-0 font-black">
               <Flame className="w-5 h-5 fill-white text-orange-600" />
             </div>
-            {!collapsed && (
-              <div className="truncate">
+            {showExpanded && (
+              <div className="truncate min-w-0">
                 <div className="text-sm font-extrabold text-white tracking-tight flex items-center gap-1.5">
-                  LPG Manager <span className="text-orange-500 text-[11px] font-mono px-1 py-0.2 bg-orange-950/80 rounded border border-orange-800/60">BD</span>
+                  LPG Manager <span className="text-orange-500 text-[10px] font-mono px-1 py-0.2 bg-orange-950/80 rounded border border-orange-800/60">BD</span>
                 </div>
                 <div className="text-[11px] text-slate-400 font-medium truncate">
-                  Rahman LPG Distribution
+                  {settings.profile.businessName}
                 </div>
               </div>
             )}
           </div>
+
+          {/* Close button on mobile */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 lg:hidden transition-colors"
+            title="Close menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          {/* Desktop collapse toggle */}
+          {setCollapsed && (
+            <button
+              type="button"
+              onClick={() => setCollapsed(showExpanded)}
+              className="hidden lg:flex p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+              {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </button>
+          )}
         </div>
 
         {/* Scrollable Navigation Items */}
@@ -134,13 +160,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             title={t('nav.dashboard')}
           >
             <LayoutDashboard className="w-4 h-4 shrink-0" />
-            {!collapsed && <span className="truncate">{t('nav.dashboard')}</span>}
+            {showExpanded && <span className="truncate">{t('nav.dashboard')}</span>}
           </button>
 
           {/* Sales Section */}
           {showSalesSection && (
             <div className="pt-1">
-              {!collapsed ? (
+              {showExpanded ? (
                 <button
                   onClick={() => toggleSection('sales')}
                   className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
@@ -155,7 +181,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <div className="h-px bg-slate-800 my-2" />
               )}
 
-              {(openSections.sales || collapsed) && (
+              {(openSections.sales || isCompact) && (
                 <div className="space-y-0.5 mt-0.5">
                   {canView('sales_new') && (
                     <button
@@ -168,7 +194,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.new_sale')}
                     >
                       <PlusCircle className="w-4 h-4 shrink-0 text-emerald-400" />
-                      {!collapsed && <span>{t('nav.new_sale')}</span>}
+                      {showExpanded && <span>{t('nav.new_sale')}</span>}
                     </button>
                   )}
 
@@ -183,7 +209,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.sales_list')}
                     >
                       <ListOrdered className="w-4 h-4 shrink-0" />
-                      {!collapsed && <span>{t('nav.sales_list')}</span>}
+                      {showExpanded && <span>{t('nav.sales_list')}</span>}
                     </button>
                   )}
 
@@ -198,7 +224,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.challans')}
                     >
                       <Truck className="w-4 h-4 shrink-0 text-amber-400" />
-                      {!collapsed && <span>{t('nav.challans')}</span>}
+                      {showExpanded && <span>{t('nav.challans')}</span>}
                     </button>
                   )}
 
@@ -213,7 +239,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.returns')}
                     >
                       <RotateCcw className="w-4 h-4 shrink-0 text-rose-400" />
-                      {!collapsed && <span>{t('nav.returns')}</span>}
+                      {showExpanded && <span>{t('nav.returns')}</span>}
                     </button>
                   )}
                 </div>
@@ -224,7 +250,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Purchases Section */}
           {showPurchasesSection && (
             <div className="pt-1">
-              {!collapsed && (
+              {showExpanded && (
                 <button
                   onClick={() => toggleSection('purchases')}
                   className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
@@ -237,7 +263,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
               )}
 
-              {(openSections.purchases || collapsed) && (
+              {(openSections.purchases || isCompact) && (
                 <div className="space-y-0.5 mt-0.5">
                   {canView('purchase_new') && (
                     <button
@@ -250,7 +276,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.new_purchase')}
                     >
                       <PlusCircle className="w-4 h-4 shrink-0 text-blue-400" />
-                      {!collapsed && <span>{t('nav.new_purchase')}</span>}
+                      {showExpanded && <span>{t('nav.new_purchase')}</span>}
                     </button>
                   )}
                   {canView('purchase_list') && (
@@ -264,7 +290,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.purchase_list')}
                     >
                       <ListOrdered className="w-4 h-4 shrink-0" />
-                      {!collapsed && <span>{t('nav.purchase_list')}</span>}
+                      {showExpanded && <span>{t('nav.purchase_list')}</span>}
                     </button>
                   )}
                 </div>
@@ -275,7 +301,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Cylinders & Inventory */}
           {showInventorySection && (
             <div className="pt-1">
-              {!collapsed && (
+              {showExpanded && (
                 <button
                   onClick={() => toggleSection('inventory')}
                   className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
@@ -288,7 +314,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
               )}
 
-              {(openSections.inventory || collapsed) && (
+              {(openSections.inventory || isCompact) && (
                 <div className="space-y-0.5 mt-0.5">
                   {canView('inventory_stock') && (
                     <button
@@ -301,7 +327,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.current_stock')}
                     >
                       <PackageCheck className="w-4 h-4 shrink-0 text-emerald-400" />
-                      {!collapsed && <span>{t('nav.current_stock')}</span>}
+                      {showExpanded && <span>{t('nav.current_stock')}</span>}
                     </button>
                   )}
 
@@ -316,7 +342,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.stock_movements')}
                     >
                       <Activity className="w-4 h-4 shrink-0 text-cyan-400" />
-                      {!collapsed && <span>{t('nav.stock_movements')}</span>}
+                      {showExpanded && <span>{t('nav.stock_movements')}</span>}
                     </button>
                   )}
 
@@ -331,7 +357,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.damaged')}
                     >
                       <AlertOctagon className="w-4 h-4 shrink-0 text-rose-400" />
-                      {!collapsed && <span>{t('nav.damaged')}</span>}
+                      {showExpanded && <span>{t('nav.damaged')}</span>}
                     </button>
                   )}
                 </div>
@@ -342,7 +368,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Customers & Dealers */}
           {showCustomersSection && (
             <div className="pt-1">
-              {!collapsed && (
+              {showExpanded && (
                 <button
                   onClick={() => toggleSection('customers')}
                   className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
@@ -355,7 +381,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
               )}
 
-              {(openSections.customers || collapsed) && (
+              {(openSections.customers || isCompact) && (
                 <div className="space-y-0.5 mt-0.5">
                   {canView('customer_list') && (
                     <button
@@ -368,7 +394,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.customer_list')}
                     >
                       <Users className="w-4 h-4 shrink-0" />
-                      {!collapsed && <span>{t('nav.customer_list')}</span>}
+                      {showExpanded && <span>{t('nav.customer_list')}</span>}
                     </button>
                   )}
 
@@ -383,7 +409,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.cylinder_due')}
                     >
                       <Flame className="w-4 h-4 shrink-0 text-orange-400" />
-                      {!collapsed && <span>{t('nav.cylinder_due')}</span>}
+                      {showExpanded && <span>{t('nav.cylinder_due')}</span>}
                     </button>
                   )}
 
@@ -398,7 +424,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.customer_ledger')}
                     >
                       <FileText className="w-4 h-4 shrink-0 text-blue-400" />
-                      {!collapsed && <span>{t('nav.customer_ledger')}</span>}
+                      {showExpanded && <span>{t('nav.customer_ledger')}</span>}
                     </button>
                   )}
                 </div>
@@ -409,7 +435,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Suppliers */}
           {showSuppliersSection && (
             <div className="pt-1">
-              {!collapsed && (
+              {showExpanded && (
                 <button
                   onClick={() => toggleSection('suppliers')}
                   className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
@@ -422,7 +448,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
               )}
 
-              {(openSections.suppliers || collapsed) && (
+              {(openSections.suppliers || isCompact) && (
                 <div className="space-y-0.5 mt-0.5">
                   {canView('supplier_list') && (
                     <button
@@ -435,7 +461,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.supplier_list')}
                     >
                       <Building2 className="w-4 h-4 shrink-0" />
-                      {!collapsed && <span>{t('nav.supplier_list')}</span>}
+                      {showExpanded && <span>{t('nav.supplier_list')}</span>}
                     </button>
                   )}
 
@@ -450,7 +476,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.supplier_ledger')}
                     >
                       <FileText className="w-4 h-4 shrink-0" />
-                      {!collapsed && <span>{t('nav.supplier_ledger')}</span>}
+                      {showExpanded && <span>{t('nav.supplier_ledger')}</span>}
                     </button>
                   )}
                 </div>
@@ -461,7 +487,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Accounts & Cashbook */}
           {showAccountsSection && (
             <div className="pt-1">
-              {!collapsed && (
+              {showExpanded && (
                 <button
                   onClick={() => toggleSection('accounts')}
                   className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
@@ -474,7 +500,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
               )}
 
-              {(openSections.accounts || collapsed) && (
+              {(openSections.accounts || isCompact) && (
                 <div className="space-y-0.5 mt-0.5">
                   {canView('accounts_cashbook') && (
                     <button
@@ -487,7 +513,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.cashbook')}
                     >
                       <Wallet className="w-4 h-4 shrink-0 text-emerald-400" />
-                      {!collapsed && <span>{t('nav.cashbook')}</span>}
+                      {showExpanded && <span>{t('nav.cashbook')}</span>}
                     </button>
                   )}
 
@@ -502,7 +528,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.money_receipt')}
                     >
                       <ArrowDownLeft className="w-4 h-4 shrink-0 text-emerald-400" />
-                      {!collapsed && <span>{t('nav.money_receipt')}</span>}
+                      {showExpanded && <span>{t('nav.money_receipt')}</span>}
                     </button>
                   )}
 
@@ -517,7 +543,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.supplier_payment')}
                     >
                       <ArrowUpRight className="w-4 h-4 shrink-0 text-rose-400" />
-                      {!collapsed && <span>{t('nav.supplier_payment')}</span>}
+                      {showExpanded && <span>{t('nav.supplier_payment')}</span>}
                     </button>
                   )}
 
@@ -532,7 +558,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.expenses')}
                     >
                       <Receipt className="w-4 h-4 shrink-0 text-amber-400" />
-                      {!collapsed && <span>{t('nav.expenses')}</span>}
+                      {showExpanded && <span>{t('nav.expenses')}</span>}
                     </button>
                   )}
 
@@ -547,7 +573,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       title={t('nav.financial_summary')}
                     >
                       <BarChart3 className="w-4 h-4 shrink-0 text-cyan-400" />
-                      {!collapsed && <span>{t('nav.financial_summary')}</span>}
+                      {showExpanded && <span>{t('nav.financial_summary')}</span>}
                     </button>
                   )}
                 </div>
@@ -568,7 +594,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 title={t('nav.reports_section')}
               >
                 <BarChart3 className="w-4 h-4 shrink-0 text-indigo-400" />
-                {!collapsed && <span className="font-semibold">{t('nav.reports_section')}</span>}
+                {showExpanded && <span className="font-semibold">{t('nav.reports_section')}</span>}
               </button>
             </div>
           )}
@@ -586,7 +612,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 title="System Audit Log"
               >
                 <ClipboardList className="w-4 h-4 shrink-0 text-slate-400" />
-                {!collapsed && <span>System Audit Log</span>}
+                {showExpanded && <span>System Audit Log</span>}
               </button>
             </div>
           )}
@@ -604,7 +630,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 title={t('nav.users_roles')}
               >
                 <UserCheck className="w-4 h-4 shrink-0 text-emerald-400" />
-                {!collapsed && <span>{t('nav.users_roles')}</span>}
+                {showExpanded && <span>{t('nav.users_roles')}</span>}
               </button>
             </div>
           )}
@@ -622,7 +648,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 title={t('nav.supabase_database')}
               >
                 <Database className="w-4 h-4 shrink-0 text-emerald-400" />
-                {!collapsed && <span className="font-bold">{t('nav.supabase_database')}</span>}
+                {showExpanded && <span className="font-bold">{t('nav.supabase_database')}</span>}
               </button>
             </div>
           )}
@@ -640,7 +666,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 title={t('nav.settings')}
               >
                 <Settings className="w-4 h-4 shrink-0 text-slate-400" />
-                {!collapsed && <span>{t('nav.settings')}</span>}
+                {showExpanded && <span>{t('nav.settings')}</span>}
               </button>
             </div>
           )}
@@ -648,7 +674,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* User Profile & Language Footer */}
         <div className="p-3 border-t border-slate-800/80 bg-slate-950/70 shrink-0 space-y-2">
-          {!collapsed && (
+          {showExpanded && (
             <div className="flex items-center justify-between px-1 py-1 text-slate-400 text-[11px]">
               <span className="flex items-center gap-1.5">
                 <Globe className="w-3.5 h-3.5 text-orange-400" />
@@ -658,7 +684,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
 
-          {!collapsed ? (
+          {showExpanded ? (
             <div 
               onClick={() => navigateTo('users_roles')}
               className="flex items-center gap-2.5 cursor-pointer hover:bg-slate-900/60 p-1 rounded-md transition-colors"

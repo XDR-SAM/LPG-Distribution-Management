@@ -91,12 +91,13 @@ export const TopBar: React.FC<TopBarProps> = ({
   return (
     <header className="h-14 bg-white border-b border-slate-200 sticky top-0 z-30 flex items-center justify-between px-3 md:px-5 select-none shadow-2xs">
       {/* Left section: Toggle & Business Info */}
-      <div className="flex items-center gap-2 md:gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0">
         {/* Mobile menu trigger */}
         <button
           onClick={() => setMobileOpen(true)}
-          className="p-1.5 rounded-md text-slate-600 hover:bg-slate-100 lg:hidden"
+          className="p-1.5 rounded-md text-slate-700 hover:bg-slate-100 lg:hidden shrink-0 transition-colors"
           title="Open Menu"
+          aria-label="Open navigation menu"
         >
           <Menu className="w-5 h-5" />
         </button>
@@ -104,22 +105,22 @@ export const TopBar: React.FC<TopBarProps> = ({
         {/* Desktop Collapse button */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-md text-slate-500 hover:bg-slate-100 hidden lg:flex items-center justify-center transition-colors"
+          className="p-1.5 rounded-md text-slate-500 hover:bg-slate-100 hidden lg:flex items-center justify-center transition-colors shrink-0"
           title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
         >
           {collapsed ? <PanelLeft className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
         </button>
 
         {/* Business and Godown Info */}
-        <div className="flex items-center gap-2">
-          <div className="leading-tight">
-            <div className="text-xs font-black text-slate-900 flex items-center gap-1.5">
-              <span>{settings.profile.businessName}</span>
-              <span className="text-[10px] font-semibold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200 hidden sm:inline-block">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="leading-tight min-w-0">
+            <div className="text-xs font-black text-slate-900 flex items-center gap-1.5 min-w-0">
+              <span className="truncate max-w-[120px] xs:max-w-[160px] sm:max-w-[220px] md:max-w-none">{settings.profile.businessName}</span>
+              <span className="text-[10px] font-semibold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200 hidden sm:inline-block shrink-0">
                 Mohammadpur Godown
               </span>
             </div>
-            <div className="text-[11px] text-slate-500 hidden md:block">
+            <div className="text-[11px] text-slate-500 hidden md:block truncate">
               Dhaka, Bangladesh · Reg: {settings.profile.tradeLicense.slice(0, 15)}...
             </div>
           </div>
@@ -142,8 +143,18 @@ export const TopBar: React.FC<TopBarProps> = ({
         </button>
       </div>
 
-      {/* Right section: Language Toggle, Supabase Status, Date, Quick Actions, User Profile */}
-      <div className="flex items-center gap-2 md:gap-2.5">
+      {/* Right section: Mobile Search, Language Toggle, Supabase Status, Date, Quick Actions, User Profile */}
+      <div className="flex items-center gap-1 sm:gap-2 md:gap-2.5 shrink-0">
+        {/* Mobile Search Button */}
+        <button
+          onClick={() => setIsSearchOpen(true)}
+          className="p-1.5 rounded-md text-slate-600 hover:bg-slate-100 md:hidden transition-colors"
+          title={t('app.search_placeholder')}
+          aria-label="Search"
+        >
+          <Search className="w-4 h-4" />
+        </button>
+
         {/* Global Language Toggle Switch */}
         <LanguageToggle variant="pill" />
 
@@ -182,7 +193,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           {showQuickActions && (
             <>
               <div className="fixed inset-0 z-20" onClick={() => setShowQuickActions(false)} />
-              <div className="absolute right-0 mt-1.5 w-56 bg-white rounded-lg shadow-xl border border-slate-200 py-1 z-30 text-xs">
+              <div className="absolute right-0 mt-1.5 w-56 max-w-[calc(100vw-1.5rem)] bg-white rounded-lg shadow-xl border border-slate-200 py-1 z-30 text-xs">
                 <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
                   Quick Actions ({roleConfig.title})
                 </div>
@@ -285,7 +296,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           {showNotifications && (
             <>
               <div className="fixed inset-0 z-20" onClick={() => setShowNotifications(false)} />
-              <div className="absolute right-0 mt-1.5 w-80 bg-white rounded-lg shadow-xl border border-slate-200 py-2 z-30 text-xs max-h-96 overflow-y-auto">
+              <div className="absolute right-0 mt-1.5 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] bg-white rounded-lg shadow-xl border border-slate-200 py-2 z-30 text-xs max-h-96 overflow-y-auto">
                 <div className="px-3 py-1.5 border-b border-slate-100 flex items-center justify-between">
                   <span className="font-bold text-slate-800">Godown Alerts</span>
                   <span className="text-[10px] bg-orange-100 text-orange-800 font-bold px-1.5 py-0.5 rounded">
@@ -345,7 +356,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           {showUserMenu && (
             <>
               <div className="fixed inset-0 z-20" onClick={() => setShowUserMenu(false)} />
-              <div className="absolute right-0 mt-1.5 w-64 bg-white rounded-lg shadow-xl border border-slate-200 py-1 z-30 text-xs">
+              <div className="absolute right-0 mt-1.5 w-64 max-w-[calc(100vw-1.5rem)] bg-white rounded-lg shadow-xl border border-slate-200 py-1 z-30 text-xs">
                 {/* Active User Header */}
                 <div className="px-3 py-2 border-b border-slate-100">
                   <div className="font-bold text-slate-900">{currentUser?.name}</div>
