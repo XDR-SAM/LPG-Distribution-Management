@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { Language } from '../utils/translations';
 import { useLanguage } from './LanguageContext';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
@@ -150,12 +150,15 @@ interface AppContextType {
   auditLogs: AuditLog[];
   notifications: AppNotification[];
   markNotificationRead: (id: string) => void;
+  supplierPayments: any[];
 
   // Selected for modals / views
   selectedCustomerForDetails: Customer | null;
   setSelectedCustomerForDetails: (c: Customer | null) => void;
   printSale: Sale | null;
   setPrintSale: (s: Sale | null) => void;
+  printInvoice: Sale | null;
+  setPrintInvoice: (s: Sale | null) => void;
   printChallan: { sale?: Sale; delivery?: Delivery } | null;
   setPrintChallan: (c: { sale?: Sale; delivery?: Delivery } | null) => void;
   printReceipt: MoneyReceipt | null;
@@ -173,8 +176,10 @@ interface AppContextType {
   addPurchase: (purchaseData: Omit<Purchase, 'id' | 'purchaseNo' | 'createdAt' | 'status'> & { id?: string; purchaseNo?: string }) => Purchase;
   receivePayment: (data: { customerId: string; amount: number; paymentMethod: PaymentMethod; account: AccountType; notes?: string; transactionRef?: string; allocatedInvoiceId?: string }) => MoneyReceipt;
   makeSupplierPayment: (data: { supplierId: string; amount: number; paymentMethod: PaymentMethod; account: AccountType; notes?: string; transactionRef?: string }) => void;
+  paySupplier: (data: any) => void;
   addExpense: (data: Omit<Expense, 'id' | 'voucherNo'>) => Expense;
   adjustStock: (productId: string, fullDelta: number, emptyDelta: number, damagedDelta: number, lostDelta: number, reason: string) => void;
+  recordDamagedCylinder: (productId: string, qty: number, reason: string) => void;
   receiveEmptyCylinders: (customerId: string, productId: string, qty: number, condition: 'Good' | 'Damaged', notes?: string) => void;
   sendEmptyToSupplier: (supplierId: string, productId: string, qty: number, notes?: string) => void;
   addCustomer: (c: Omit<Customer, 'id' | 'code' | 'createdAt' | 'currentDue'>) => Customer;
@@ -1408,6 +1413,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { added, updated };
   };
 
+  const recordDamagedCylinder = (productId: string, qty: number, reason: string) => {
+    adjustStock(productId, 0, -qty, qty, 0, reason);
+  };
+
+  const supplierPayments = useMemo(() => {
+    return (transactions || [])
+      .filter(t => t.type === 'PAYMENT_MADE' && (t.partyType === 'supplier' || (t.voucherNo && t.voucherNo.startsWith('PV-'))))
+      .map(t => ({
+        id: t.id,
+        voucherNo: t.voucherNo,
+        date: t.date,
+        supplierId: t.partyId || '',
+        supplierName: t.partyName || '',
+        amount: t.credit || t.debit || 0,
+        paymentMethod: (t.paymentMethod as PaymentMethod) || 'Bank Transfer',
+        account: t.account,
+        chequeNo: t.reference,
+        transactionRef: t.reference,
+        notes: t.description,
+      }));
+  }, [transactions]);
+
   return (
     <AppContext.Provider
       value={{
@@ -1442,10 +1469,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         auditLogs,
         notifications,
         markNotificationRead,
+        supplierPayments,
         selectedCustomerForDetails,
         setSelectedCustomerForDetails,
         printSale,
         setPrintSale,
+        printInvoice: printSale,
+        setPrintInvoice: setPrintSale,
         printChallan,
         setPrintChallan,
         printReceipt,
@@ -1461,8 +1491,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addPurchase,
         receivePayment,
         makeSupplierPayment,
+        paySupplier: makeSupplierPayment,
         addExpense,
         adjustStock,
+        recordDamagedCylinder,
         receiveEmptyCylinders,
         sendEmptyToSupplier,
         addCustomer,

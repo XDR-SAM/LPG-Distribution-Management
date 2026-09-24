@@ -60,7 +60,7 @@ export const SupabaseSyncView: React.FC = () => {
       // Fetch live table counts if connected
       const client = getSupabase();
       if (client) {
-        const tableNames = ['profiles', 'products', 'customers', 'suppliers', 'sales', 'purchases', 'stock_movements', 'money_receipts', 'expenses', 'app_settings'];
+        const tableNames = ['profiles', 'brands', 'products', 'customers', 'suppliers', 'sales', 'purchases', 'stock_movements', 'money_receipts', 'supplier_payments', 'expenses', 'deliveries', 'app_settings'];
         const countsObj: Record<string, number | null> = {};
         await Promise.all(
           tableNames.map(async (t) => {
@@ -361,6 +361,7 @@ export const SupabaseSyncView: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {[
                   { name: 'profiles', desc: 'System users, contact info, and assigned RBAC roles', count: users.length },
+                  { name: 'brands', desc: 'LPG cylinder brands (Bashundhara, Beximco, Omera, etc.)', count: 11 },
                   { name: 'products', desc: 'LPG cylinders catalog, deposit values, full/empty/damaged stock', count: products.length },
                   { name: 'customers', desc: 'Dealers, hotels, restaurants, credit limits, cylinder holdings', count: customers.length },
                   { name: 'suppliers', desc: 'Gas refinery depots, cylinder payables, and dues', count: suppliers.length },
@@ -368,7 +369,9 @@ export const SupabaseSyncView: React.FC = () => {
                   { name: 'purchases', desc: 'Refinery depot cylinder truck dispatches and payments', count: purchases.length },
                   { name: 'stock_movements', desc: 'Full/empty movement audit trail across godown transactions', count: stockMovements.length },
                   { name: 'money_receipts', desc: 'Payments collected from customers and dealers', count: moneyReceipts.length },
+                  { name: 'supplier_payments', desc: 'Payment vouchers issued to gas refinery suppliers', count: 0 },
                   { name: 'expenses', desc: 'Operational godown overheads, transport, and utilities', count: expenses.length },
+                  { name: 'deliveries', desc: 'Delivery dispatches, driver challans, and vehicle logs', count: 0 },
                   { name: 'app_settings', desc: 'Business profile, VAT mode, trade license, and invoice prefixes', count: 1 },
                 ].map((tbl, i) => {
                   const remCount = remoteCounts[tbl.name];

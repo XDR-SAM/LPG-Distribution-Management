@@ -52,10 +52,11 @@ export const CustomerListView: React.FC = () => {
   const [creditLimit, setCreditLimit] = useState<number>(50000);
   const [creditPeriodDays, setCreditPeriodDays] = useState<number>(15);
 
-  const areas = Array.from(new Set(customers.map(c => c.area).filter(Boolean)));
+  const safeCustomers = customers || [];
+  const areas = Array.from(new Set(safeCustomers.map(c => c.area).filter(Boolean)));
 
   const term = (searchTerm || '').toLowerCase();
-  const filtered = customers.filter(c => {
+  const filtered = safeCustomers.filter(c => {
     const matchesSearch =
       (c.businessName || '').toLowerCase().includes(term) ||
       (c.contactPerson || '').toLowerCase().includes(term) ||
@@ -225,8 +226,9 @@ export const CustomerListView: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filtered.map(c => {
-                const totalEmptyDue = c.cylinderHoldings.reduce((s, h) => s + h.emptyDue, 0);
-                const isOverLimit = c.currentDue > c.creditLimit;
+                const holdings = c.cylinderHoldings || [];
+                const totalEmptyDue = holdings.reduce((s, h) => s + (h.emptyDue || 0), 0);
+                const isOverLimit = (c.currentDue || 0) > (c.creditLimit || 0);
 
                 return (
                   <tr key={c.id} className="hover:bg-slate-50/80">

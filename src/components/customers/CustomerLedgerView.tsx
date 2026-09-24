@@ -18,32 +18,33 @@ export const CustomerLedgerView: React.FC = () => {
   const [fromDate, setFromDate] = useState('2026-09-01');
   const [toDate, setToDate] = useState('2026-09-14');
 
-  const currentCustomer = customers.find(c => c.id === selectedCustomerId) || customers[0];
+  const safeCustomers = customers || [];
+  const currentCustomer = safeCustomers.find(c => c.id === selectedCustomerId) || safeCustomers[0];
 
   // Customer sales
-  const customerSales = sales
-    .filter(s => s.customerId === currentCustomer?.id && s.status !== 'cancelled')
+  const customerSales = (sales || [])
+    .filter(s => s && s.customerId === currentCustomer?.id && s.status !== 'cancelled')
     .map(s => ({
       date: s.date,
       type: 'INVOICE',
       reference: s.invoiceNo,
-      description: `Sale of ${s.totalFullQty} cylinders (Exchange ${s.totalEmptyReceived} empties)`,
-      debit: s.grandTotal,
-      credit: s.amountPaid,
-      fullCylinders: s.totalFullQty,
-      emptyCylinders: s.totalEmptyReceived,
+      description: `Sale of ${s.totalFullQty || 0} cylinders (Exchange ${s.totalEmptyReceived || 0} empties)`,
+      debit: s.grandTotal || 0,
+      credit: s.amountPaid || 0,
+      fullCylinders: s.totalFullQty || 0,
+      emptyCylinders: s.totalEmptyReceived || 0,
     }));
 
   // Customer money receipts
-  const customerReceipts = moneyReceipts
-    .filter(r => r.customerId === currentCustomer?.id)
+  const customerReceipts = (moneyReceipts || [])
+    .filter(r => r && r.customerId === currentCustomer?.id)
     .map(r => ({
       date: r.date,
       type: 'PAYMENT',
       reference: r.receiptNo,
       description: `Cash/Online payment received (${r.paymentMethod})`,
       debit: 0,
-      credit: r.amount,
+      credit: r.amount || 0,
       fullCylinders: 0,
       emptyCylinders: 0,
     }));
@@ -53,7 +54,7 @@ export const CustomerLedgerView: React.FC = () => {
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
-  let runningBalance = 25000; // Simulated opening balance
+  let runningBalance = currentCustomer?.openingBalance || 0;
   const ledgerRows = allEntries.map(entry => {
     runningBalance = runningBalance + entry.debit - entry.credit;
     return {
@@ -64,7 +65,8 @@ export const CustomerLedgerView: React.FC = () => {
 
   const totalSalesDebit = allEntries.reduce((sum, e) => sum + e.debit, 0);
   const totalPaidCredit = allEntries.reduce((sum, e) => sum + e.credit, 0);
-  const totalEmptyDue = currentCustomer?.cylinderHoldings.reduce((s, h) => s + h.emptyDue, 0) || 0;
+  const customerHoldings = currentCustomer?.cylinderHoldings || [];
+  const totalEmptyDue = customerHoldings.reduce((s, h) => s + (h.emptyDue || 0), 0);
 
   const handlePrint = () => {
     window.print();
@@ -180,7 +182,8 @@ export const CustomerLedgerView: React.FC = () => {
             </div>
             <div className="text-[11px] text-slate-500 pt-1">
               Holdings breakdown:
-              {currentCustomer?.cylinderHoldings.map((h, i) => (
+              {customerHoldings.length === 0 && <span className="block italic text-slate-400">No active cylinder dues</span>}
+              {customerHoldings.map((h, i) => (
                 <span key={i} className="block font-medium text-slate-700">
                   • {h.brand} {h.size}: <strong>{h.emptyDue} pcs due</strong>
                 </span>

@@ -588,26 +588,47 @@ export const createSaleInDb = async (saleData: Omit<Sale, 'id' | 'invoiceNo' | '
     console.warn('RPC create_sale_transaction error, falling back to sequential database inserts:', rpcError.message);
     
     // Direct Insert into sales table
-    const { data: insertedSale, error: sErr } = await supabase
+    const saleInsertPayload: any = {
+      invoice_no: invoiceNo,
+      customer_id: saleData.customerId,
+      subtotal: saleData.subtotal,
+      discount: saleData.discount,
+      transport_charge: saleData.transportCharge || 0,
+      loading_charge: saleData.loadingCharge || 0,
+      grand_total: saleData.grandTotal,
+      amount_paid: saleData.amountPaid,
+      current_due: saleData.grandTotal - saleData.amountPaid,
+      payment_status: saleData.amountPaid >= saleData.grandTotal ? 'paid' : (saleData.amountPaid > 0 ? 'partial' : 'due'),
+      sale_status: 'completed',
+      payment_method: saleData.paymentMethod,
+      notes: saleData.notes || '',
+    };
+    if (saleData.date) {
+      saleInsertPayload.date = saleData.date;
+    }
+
+    let insertedSale: any = null;
+    let sErr: any = null;
+
+    const firstTry = await supabase
       .from('sales')
-      .insert({
-        invoice_no: invoiceNo,
-        customer_id: saleData.customerId,
-        date: saleData.date,
-        subtotal: saleData.subtotal,
-        discount: saleData.discount,
-        transport_charge: saleData.transportCharge || 0,
-        loading_charge: saleData.loadingCharge || 0,
-        grand_total: saleData.grandTotal,
-        amount_paid: saleData.amountPaid,
-        current_due: saleData.grandTotal - saleData.amountPaid,
-        payment_status: saleData.amountPaid >= saleData.grandTotal ? 'paid' : (saleData.amountPaid > 0 ? 'partial' : 'due'),
-        sale_status: 'completed',
-        payment_method: saleData.paymentMethod,
-        notes: saleData.notes || '',
-      })
+      .insert(saleInsertPayload)
       .select('id')
       .single();
+
+    if (firstTry.error && firstTry.error.message?.includes("'date'")) {
+      delete saleInsertPayload.date;
+      const retry = await supabase
+        .from('sales')
+        .insert(saleInsertPayload)
+        .select('id')
+        .single();
+      insertedSale = retry.data;
+      sErr = retry.error;
+    } else {
+      insertedSale = firstTry.data;
+      sErr = firstTry.error;
+    }
 
     if (sErr) throw sErr;
     createdId = insertedSale.id;
@@ -796,24 +817,45 @@ export const createPurchaseInDb = async (purchaseData: Omit<Purchase, 'id' | 'pu
 
   if (rpcError) {
     console.warn('RPC create_purchase_transaction error, falling back to direct inserts:', rpcError.message);
-    const { data: ins, error: pErr } = await supabase
+    const purchaseInsertPayload: any = {
+      purchase_no: purchaseNo,
+      supplier_id: purchaseData.supplierId,
+      supplier_reference: purchaseData.supplierInvoiceRef,
+      subtotal: purchaseData.subtotal,
+      transport_cost: purchaseData.transportCost,
+      loading_cost: purchaseData.loadingCost,
+      grand_total: purchaseData.grandTotal,
+      amount_paid: purchaseData.paidAmount,
+      due_amount: purchaseData.dueAmount,
+      payment_method: purchaseData.paymentMethod,
+      status: 'received',
+    };
+    if (purchaseData.date) {
+      purchaseInsertPayload.date = purchaseData.date;
+    }
+
+    let ins: any = null;
+    let pErr: any = null;
+
+    const firstTry = await supabase
       .from('purchases')
-      .insert({
-        purchase_no: purchaseNo,
-        supplier_id: purchaseData.supplierId,
-        supplier_reference: purchaseData.supplierInvoiceRef,
-        date: purchaseData.date,
-        subtotal: purchaseData.subtotal,
-        transport_cost: purchaseData.transportCost,
-        loading_cost: purchaseData.loadingCost,
-        grand_total: purchaseData.grandTotal,
-        amount_paid: purchaseData.paidAmount,
-        due_amount: purchaseData.dueAmount,
-        payment_method: purchaseData.paymentMethod,
-        status: 'received',
-      })
+      .insert(purchaseInsertPayload)
       .select('id')
       .single();
+
+    if (firstTry.error && firstTry.error.message?.includes("'date'")) {
+      delete purchaseInsertPayload.date;
+      const retry = await supabase
+        .from('purchases')
+        .insert(purchaseInsertPayload)
+        .select('id')
+        .single();
+      ins = retry.data;
+      pErr = retry.error;
+    } else {
+      ins = firstTry.data;
+      pErr = firstTry.error;
+    }
 
     if (pErr) throw pErr;
     createdId = ins.id;
@@ -1159,13 +1201,34 @@ export const logAuditInDb = async (action: string, module: string, reference: st
 // 12. SETTINGS
 // ==========================================
 export const fetchSettingsFromDb = async (): Promise<AppSettings | null> => {
-  const { data, error } = await supabase
+  // Try 'settings' table first
+  let { data, error } = await supabase
     .from('settings')
     .select('*')
-    .eq('id', 'app_config')
+    .limit(1)
     .maybeSingle();
 
-  if (error || !data) return null;
+  // If 'settings' is not found, fallback to 'app_settings'
+  if (error || !data) {
+    const fallback = await supabase
+      .from('app_settings')
+      .select('*')
+      .limit(1)
+      .maybeSingle();
+    
+    if (fallback.data?.settings) {
+      return fallback.data.settings as AppSettings;
+    }
+    if (!fallback.error && fallback.data) {
+      data = fallback.data;
+    }
+  }
+
+  if (!data) return null;
+
+  if (data.settings && typeof data.settings === 'object') {
+    return data.settings as AppSettings;
+  }
 
   return {
     profile: {
@@ -1200,28 +1263,40 @@ export const fetchSettingsFromDb = async (): Promise<AppSettings | null> => {
 };
 
 export const updateSettingsInDb = async (s: Partial<AppSettings>): Promise<void> => {
-  const payload: any = {};
-  if (s.profile?.businessName) payload.business_name = s.profile.businessName;
-  if (s.profile?.ownerName) payload.owner_name = s.profile.ownerName;
-  if (s.profile?.phone) payload.phone = s.profile.phone;
-  if (s.profile?.email) payload.email = s.profile.email;
-  if (s.profile?.address) payload.address = s.profile.address;
-  if (s.profile?.bin) payload.bin = s.profile.bin;
-  if (s.vatRatePercent !== undefined) payload.vat_rate = s.vatRatePercent;
-  if (s.currencySymbol) payload.currency_symbol = s.currencySymbol;
-  if (s.invoicePrefix) payload.invoice_prefix = s.invoicePrefix;
-  if (s.purchasePrefix) payload.purchase_prefix = s.purchasePrefix;
-  if (s.receiptPrefix) payload.receipt_prefix = s.receiptPrefix;
-  if (s.voucherPrefix) payload.voucher_prefix = s.voucherPrefix;
-  if (s.challanPrefix) payload.challan_prefix = s.challanPrefix;
-  if (s.footerText) payload.footer_text = s.footerText;
-  payload.updated_at = new Date().toISOString();
+  // Always update app_settings which exists in the database
+  try {
+    await supabase
+      .from('app_settings')
+      .upsert({ id: 'primary', settings: s, updated_at: new Date().toISOString() });
+  } catch (err) {
+    console.warn('app_settings save error:', err);
+  }
 
-  const { error } = await supabase
-    .from('settings')
-    .upsert({ id: 'app_config', ...payload });
+  // Also attempt settings table
+  try {
+    const payload: any = {};
+    if (s.profile?.businessName) payload.business_name = s.profile.businessName;
+    if (s.profile?.ownerName) payload.owner_name = s.profile.ownerName;
+    if (s.profile?.phone) payload.phone = s.profile.phone;
+    if (s.profile?.email) payload.email = s.profile.email;
+    if (s.profile?.address) payload.address = s.profile.address;
+    if (s.profile?.bin) payload.bin = s.profile.bin;
+    if (s.vatRatePercent !== undefined) payload.vat_rate = s.vatRatePercent;
+    if (s.currencySymbol) payload.currency_symbol = s.currencySymbol;
+    if (s.invoicePrefix) payload.invoice_prefix = s.invoicePrefix;
+    if (s.purchasePrefix) payload.purchase_prefix = s.purchasePrefix;
+    if (s.receiptPrefix) payload.receipt_prefix = s.receiptPrefix;
+    if (s.voucherPrefix) payload.voucher_prefix = s.voucherPrefix;
+    if (s.challanPrefix) payload.challan_prefix = s.challanPrefix;
+    if (s.footerText) payload.footer_text = s.footerText;
+    payload.updated_at = new Date().toISOString();
 
-  if (error) throw error;
+    await supabase
+      .from('settings')
+      .upsert({ id: 'app_config', ...payload });
+  } catch {
+    // Ignore if table doesn't exist yet
+  }
 };
 
 // ==========================================
