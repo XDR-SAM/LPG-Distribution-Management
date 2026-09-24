@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { formatBDT } from '../../utils/formatters';
 import { CylinderDueBadge } from '../common/Badge';
-import { Flame, RotateCcw, Search, AlertTriangle, ShieldCheck, Printer } from 'lucide-react';
+import { Flame, RotateCcw, Search, AlertTriangle, ShieldCheck, Printer, X, FileText } from 'lucide-react';
 
 export const CustomerCylinderDueView: React.FC = () => {
   const {
     customers,
     products,
+    setActiveView,
     setIsReceiveEmptyModalOpen,
     setSelectedCustomerForDetails,
   } = useApp();
@@ -100,19 +101,27 @@ export const CustomerCylinderDueView: React.FC = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs flex items-center justify-between text-xs">
-        <div className="relative w-80">
+      <div className="bg-white p-3 rounded-xl border border-slate-200/90 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="relative w-80 max-w-full">
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search customer name, phone, area..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded font-medium text-slate-900 text-xs"
+            className="w-full pl-8 pr-7 py-1.5 bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-900 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
           />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
-        <div className="text-slate-500">
-          Showing <strong>{filteredCustomers.length}</strong> accounts with cylinder dues
+        <div className="text-slate-500 text-[11px] font-medium">
+          Showing <strong>{filteredCustomers.length}</strong> accounts with active cylinder balances
         </div>
       </div>
 
@@ -126,26 +135,35 @@ export const CustomerCylinderDueView: React.FC = () => {
           return (
             <div
               key={cust.id}
-              className="bg-white rounded-lg border border-slate-200 shadow-2xs p-4 flex flex-col justify-between space-y-3"
+              className="bg-white rounded-xl border border-slate-200/90 hover:border-purple-300 shadow-2xs p-4 flex flex-col justify-between space-y-3 transition-colors"
             >
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-bold text-slate-900 text-sm">{cust.businessName}</h3>
-                  <div className="text-slate-500 text-[11px]">
-                    {cust.contactPerson} · {cust.phone} ({cust.area})
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-9 h-9 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-sm shrink-0">
+                    {cust.businessName.charAt(0)}
                   </div>
-                  <div className="text-slate-400 text-[10px] capitalize">Category: {cust.customerType}</div>
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-slate-900 text-sm truncate">{cust.businessName}</h3>
+                    <div className="text-slate-500 text-[11px] truncate">
+                      {cust.contactPerson} · {cust.phone}
+                    </div>
+                    <div className="text-slate-400 text-[10px] flex items-center gap-1 mt-0.5">
+                      <span className="capitalize">{cust.customerType}</span>
+                      <span>·</span>
+                      <span>{cust.area}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-xs font-bold text-slate-500 block">Total Dues:</span>
-                  <span className="text-lg font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                <div className="text-right shrink-0">
+                  <span className="text-[10px] font-bold text-slate-400 block uppercase">Unreturned:</span>
+                  <span className="text-base font-black text-purple-800 bg-purple-50 px-2 py-0.5 rounded-lg border border-purple-200 inline-block font-mono">
                     {totalEmptyDue} pcs
                   </span>
                 </div>
               </div>
 
               {/* Brand Breakup Table */}
-              <div className="border border-slate-100 rounded-md overflow-hidden bg-slate-50 text-xs">
+              <div className="border border-slate-100 rounded-lg overflow-hidden bg-slate-50 text-xs">
                 <table className="w-full text-left">
                   <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200 text-[11px]">
                     <tr>
@@ -156,14 +174,14 @@ export const CustomerCylinderDueView: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {holdings.map((h, idx) => (
-                      <tr key={idx}>
+                      <tr key={idx} className="hover:bg-slate-100/50">
                         <td className="p-2 font-medium text-slate-800">
                           {h.brand} {h.size}
                         </td>
-                        <td className="p-2 text-center font-bold text-amber-800">
+                        <td className="p-2 text-center font-bold text-purple-900 font-mono">
                           {h.emptyDue} pcs
                         </td>
-                        <td className="p-2 text-right font-medium text-slate-600">
+                        <td className="p-2 text-right font-medium text-slate-600 font-mono">
                           {h.depositHeld > 0 ? formatBDT(h.depositHeld) : '—'}
                         </td>
                       </tr>
@@ -173,20 +191,33 @@ export const CustomerCylinderDueView: React.FC = () => {
               </div>
 
               {/* Action bar */}
-              <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+              <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 text-xs gap-2 flex-wrap">
                 <div className="text-[11px] text-slate-500">
-                  Cash Due: <strong className="text-rose-600">{formatBDT(cust.currentDue)}</strong>
+                  Cash Balance: <strong className={cust.currentDue > 0 ? 'text-rose-600' : 'text-slate-700'}>{formatBDT(cust.currentDue)}</strong>
                 </div>
-                <button
-                  onClick={() => {
-                    setSelectedCustomerForDetails(cust);
-                    setIsReceiveEmptyModalOpen(true);
-                  }}
-                  className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded font-bold flex items-center gap-1 shadow-2xs"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Receive Empty From Shop</span>
-                </button>
+                <div className="flex items-center gap-1.5 ml-auto">
+                  <button
+                    onClick={() => {
+                      setSelectedCustomerForDetails(cust);
+                      setActiveView('customer_ledger');
+                    }}
+                    className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold flex items-center gap-1 transition-colors text-[11px]"
+                    title="View Customer Ledger"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Ledger</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedCustomerForDetails(cust);
+                      setIsReceiveEmptyModalOpen(true);
+                    }}
+                    className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold flex items-center gap-1 shadow-xs transition-colors text-[11px]"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Receive Empties</span>
+                  </button>
+                </div>
               </div>
             </div>
           );

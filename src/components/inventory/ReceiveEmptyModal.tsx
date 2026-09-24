@@ -8,13 +8,22 @@ export const ReceiveEmptyModal: React.FC = () => {
     setIsReceiveEmptyModalOpen,
     customers,
     products,
+    selectedCustomerForDetails,
     receiveEmptyFromCustomer,
   } = useApp();
 
-  const [selectedCustomerId, setSelectedCustomerId] = useState(customers[0]?.id || '');
+  const [selectedCustomerId, setSelectedCustomerId] = useState(
+    selectedCustomerForDetails?.id || customers[0]?.id || ''
+  );
   const [selectedProductId, setSelectedProductId] = useState(products[0]?.id || '');
   const [qty, setQty] = useState<number>(5);
   const [notes, setNotes] = useState<string>('Driver collected empties on return route');
+
+  React.useEffect(() => {
+    if (isReceiveEmptyModalOpen && selectedCustomerForDetails?.id) {
+      setSelectedCustomerId(selectedCustomerForDetails.id);
+    }
+  }, [isReceiveEmptyModalOpen, selectedCustomerForDetails]);
 
   if (!isReceiveEmptyModalOpen) return null;
 

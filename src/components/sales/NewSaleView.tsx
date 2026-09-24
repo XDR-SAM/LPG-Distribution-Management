@@ -21,6 +21,7 @@ export const NewSaleView: React.FC = () => {
     customers,
     currentUser,
     settings,
+    selectedCustomerForDetails,
     addSale,
     setActiveView,
     setPrintSale,
@@ -34,7 +35,9 @@ export const NewSaleView: React.FC = () => {
   } = useApp();
 
   // Form state
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string>(customers[0]?.id || '');
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string>(
+    selectedCustomerForDetails?.id || customers[0]?.id || ''
+  );
   const [date, setDate] = useState<string>('2026-09-14');
   const [salesperson, setSalesperson] = useState<string>(currentUser?.name || 'Kawsar Ahmed');
   const [godown, setGodown] = useState<string>('Main Godown Mohammadpur');

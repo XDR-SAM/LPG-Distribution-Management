@@ -8,10 +8,34 @@ export const getRoleConfig = (role: UserRole = 'admin'): RoleConfig => {
 export const canAccessView = (role: UserRole = 'admin', view: string): boolean => {
   if (role === 'admin' || view === 'ai_agent' || view === 'dashboard') return true;
   const config = getRoleConfig(role);
-  if (['sales_invoice', 'sales_invoices', 'sales', 'invoices'].includes(view) && config.allowedViews.includes('sales_list')) {
-    return true;
-  }
-  return config.allowedViews.includes(view);
+
+  const aliasMap: Record<string, string> = {
+    sales_pos: 'sales_new',
+    sales: 'sales_list',
+    sales_invoice: 'sales_list',
+    sales_invoices: 'sales_list',
+    invoices: 'sales_list',
+    sales_challan: 'sales_challans',
+    delivery_list: 'sales_challans',
+    customer_directory: 'customer_list',
+    customers: 'customer_list',
+    cylinder_due: 'customer_cylinder_due',
+    customer_ledgers: 'customer_ledger',
+    supplier_directory: 'supplier_list',
+    suppliers: 'supplier_list',
+    supplier_ledgers: 'supplier_ledger',
+    inventory: 'inventory_stock',
+    stock: 'inventory_stock',
+    purchases: 'purchase_list',
+    cashbook: 'accounts_cashbook',
+    daily_report: 'report_daily',
+    reports: 'report_daily',
+    reports_center: 'report_daily',
+    audit_log: 'audit_logs',
+  };
+
+  const normalized = aliasMap[view] || view;
+  return config.allowedViews.includes(normalized);
 };
 
 export const canPerform = (role: UserRole = 'admin', action: ActionPermission): boolean => {

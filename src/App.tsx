@@ -86,24 +86,37 @@ const MainContent: React.FC = () => {
       case 'purchase_new':
         return <NewPurchaseView />;
       case 'purchase_list':
+      case 'purchases':
         return <PurchaseListView />;
       case 'inventory_stock':
+      case 'inventory':
+      case 'stock':
         return <CurrentStockView />;
       case 'inventory_movements':
         return <StockMovementsView />;
       case 'inventory_damaged':
         return <DamagedLostView />;
       case 'customer_list':
+      case 'customer_directory':
+      case 'customers':
+      case 'customer':
         return <CustomerListView />;
       case 'customer_cylinder_due':
+      case 'cylinder_due':
         return <CustomerCylinderDueView />;
       case 'customer_ledger':
+      case 'customer_ledgers':
         return <CustomerLedgerView />;
       case 'supplier_list':
+      case 'supplier_directory':
+      case 'suppliers':
+      case 'supplier':
         return <SupplierListView />;
       case 'supplier_ledger':
+      case 'supplier_ledgers':
         return <SupplierLedgerView />;
       case 'accounts_cashbook':
+      case 'cashbook':
         return <CashbookView />;
       case 'accounts_receive':
         return <ReceivePaymentView />;
@@ -115,6 +128,8 @@ const MainContent: React.FC = () => {
         return <AccountsSummaryView />;
       case 'report_daily':
       case 'reports_center':
+      case 'daily_report':
+      case 'reports':
         return <DailyReportView />;
       case 'report_cylinder_audit':
         return <CylinderAuditView />;

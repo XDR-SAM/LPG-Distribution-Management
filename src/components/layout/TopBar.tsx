@@ -42,6 +42,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   setMobileOpen = (_o?: boolean) => {},
 }) => {
   const {
+    activeView,
     settings,
     currentUser,
     setCurrentUser,
@@ -68,6 +69,90 @@ export const TopBar: React.FC<TopBarProps> = ({
   const roleConfig = getRoleConfig(currentRole);
   const supabaseActive = isSupabaseConfigured();
 
+  const getViewBreadcrumbs = (): { section: string; page: string } => {
+    switch (activeView) {
+      case 'dashboard':
+        return { section: language === 'bn' ? 'হোম' : 'Home', page: language === 'bn' ? 'ড্যাশবোর্ড' : 'Dashboard' };
+      case 'sales_pos':
+      case 'sales_new':
+        return { section: language === 'bn' ? 'বিক্রয়' : 'Sales', page: language === 'bn' ? 'নতুন বিক্রয় (POS)' : 'New POS Order' };
+      case 'sales_list':
+      case 'sales_invoice':
+      case 'sales_invoices':
+      case 'sales':
+      case 'invoices':
+        return { section: language === 'bn' ? 'বিক্রয়' : 'Sales', page: language === 'bn' ? 'ইনভয়েস তালিকা' : 'Invoices' };
+      case 'sales_challan':
+      case 'sales_challans':
+      case 'delivery_list':
+        return { section: language === 'bn' ? 'লজিস্টিকস' : 'Logistics', page: language === 'bn' ? 'ডেলিভারি চালান' : 'Delivery Challans' };
+      case 'sales_returns':
+        return { section: language === 'bn' ? 'বিক্রয়' : 'Sales', page: language === 'bn' ? 'সিলিন্ডার ফেরত' : 'Returns' };
+      case 'purchase_new':
+        return { section: language === 'bn' ? 'ক্রয়' : 'Purchases', page: language === 'bn' ? 'ডিপো থেকে ক্রয়' : 'Depot Purchase' };
+      case 'purchase_list':
+      case 'purchases':
+        return { section: language === 'bn' ? 'ক্রয়' : 'Purchases', page: language === 'bn' ? 'ক্রয় রেজিস্টার' : 'Purchase Invoices' };
+      case 'inventory_stock':
+      case 'inventory':
+      case 'stock':
+        return { section: language === 'bn' ? 'ইনভেন্টরি' : 'Inventory', page: language === 'bn' ? 'সিলিন্ডার স্টক' : 'Godown Stock' };
+      case 'inventory_movements':
+        return { section: language === 'bn' ? 'ইনভেন্টরি' : 'Inventory', page: language === 'bn' ? 'স্টক মুভমেন্ট' : 'Stock Movements' };
+      case 'inventory_damaged':
+        return { section: language === 'bn' ? 'নিরাপত্তা' : 'Safety', page: language === 'bn' ? 'ত্রুটিপূর্ণ সিলিন্ডার' : 'Quarantine Cylinders' };
+      case 'customer_list':
+      case 'customer_directory':
+      case 'customers':
+      case 'customer':
+        return { section: language === 'bn' ? 'গ্রাহক' : 'Customers', page: language === 'bn' ? 'গ্রাহক ডিরেক্টরি' : 'Customer Directory' };
+      case 'customer_cylinder_due':
+      case 'cylinder_due':
+        return { section: language === 'bn' ? 'গ্রাহক' : 'Customers', page: language === 'bn' ? 'সিলিন্ডার বাকি' : 'Cylinder Receivables' };
+      case 'customer_ledger':
+      case 'customer_ledgers':
+        return { section: language === 'bn' ? 'গ্রাহক' : 'Customers', page: language === 'bn' ? 'গ্রাহক খতিয়ান' : 'Customer Ledger' };
+      case 'supplier_list':
+      case 'supplier_directory':
+      case 'suppliers':
+      case 'supplier':
+        return { section: language === 'bn' ? 'সরবরাহকারী' : 'Suppliers', page: language === 'bn' ? 'রিফাইনারি ডিপো' : 'Refineries & Depots' };
+      case 'supplier_ledger':
+      case 'supplier_ledgers':
+        return { section: language === 'bn' ? 'সরবরাহকারী' : 'Suppliers', page: language === 'bn' ? 'কোম্পানি লেজার' : 'Company Ledger' };
+      case 'accounts_cashbook':
+      case 'cashbook':
+        return { section: language === 'bn' ? 'হিসাব' : 'Accounts', page: language === 'bn' ? 'দৈনিক ক্যাশবুক' : 'Daily Cashbook' };
+      case 'accounts_receive':
+        return { section: language === 'bn' ? 'হিসাব' : 'Accounts', page: language === 'bn' ? 'টাকা আদায়' : 'Receive Payment' };
+      case 'accounts_pay':
+        return { section: language === 'bn' ? 'হিসাব' : 'Accounts', page: language === 'bn' ? 'কোম্পানি পেমেন্ট' : 'Supplier Payment' };
+      case 'accounts_expenses':
+        return { section: language === 'bn' ? 'হিসাব' : 'Accounts', page: language === 'bn' ? 'গুদাম খরচ' : 'Godown Expenses' };
+      case 'accounts_summary':
+        return { section: language === 'bn' ? 'হিসাব' : 'Accounts', page: language === 'bn' ? 'আর্থিক বিবরণী' : 'Financial Summary' };
+      case 'report_daily':
+      case 'reports_center':
+      case 'daily_report':
+      case 'reports':
+        return { section: language === 'bn' ? 'রিপোর্ট' : 'Reports', page: language === 'bn' ? 'দৈনিক বিবরণী' : 'Daily Statement' };
+      case 'report_cylinder_audit':
+        return { section: language === 'bn' ? 'অডিট' : 'Audit', page: language === 'bn' ? 'সিলিন্ডার অডিট' : 'Cylinder Audit' };
+      case 'ai_agent':
+        return { section: language === 'bn' ? 'এআই' : 'AI Copilot', page: language === 'bn' ? 'গোডাউন এজেন্ট' : 'Godown Assistant' };
+      case 'users_roles':
+        return { section: language === 'bn' ? 'প্রশাসন' : 'Admin', page: language === 'bn' ? 'ইউজার ও রোলস' : 'Users & Roles' };
+      case 'supabase_sync':
+        return { section: language === 'bn' ? 'ডাটাবেজ' : 'Database', page: language === 'bn' ? 'সুপাবেজ সিঙ্ক' : 'Supabase Sync' };
+      case 'settings':
+        return { section: language === 'bn' ? 'সেটিংস' : 'Settings', page: language === 'bn' ? 'সিস্টেম ও রেট' : 'Godown Settings' };
+      default:
+        return { section: 'LPG BD', page: 'Dashboard' };
+    }
+  };
+
+  const breadcrumbs = getViewBreadcrumbs();
+
   const handleSwitchUserRole = (targetRole: UserRole) => {
     const targetUser = users.find(u => u.role === targetRole);
     if (targetUser) {
@@ -90,13 +175,13 @@ export const TopBar: React.FC<TopBarProps> = ({
   };
 
   return (
-    <header className="h-14 bg-white border-b border-slate-200 sticky top-0 z-30 flex items-center justify-between px-3 md:px-5 select-none shadow-2xs">
-      {/* Left section: Toggle & Business Info */}
-      <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0">
+    <header className="h-14 bg-white/95 backdrop-blur-xs border-b border-slate-200 sticky top-0 z-30 flex items-center justify-between px-3 md:px-5 select-none shadow-2xs">
+      {/* Left section: Toggle & Dynamic Breadcrumbs */}
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         {/* Mobile menu trigger */}
         <button
           onClick={() => setMobileOpen(true)}
-          className="p-1.5 rounded-md text-slate-700 hover:bg-slate-100 lg:hidden shrink-0 transition-colors"
+          className="p-1.5 rounded-lg text-slate-700 hover:bg-slate-100 lg:hidden shrink-0 transition-colors"
           title="Open Menu"
           aria-label="Open navigation menu"
         >
@@ -106,24 +191,34 @@ export const TopBar: React.FC<TopBarProps> = ({
         {/* Desktop Collapse button */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-md text-slate-500 hover:bg-slate-100 hidden lg:flex items-center justify-center transition-colors shrink-0"
+          className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hidden lg:flex items-center justify-center transition-colors shrink-0"
           title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
         >
           {collapsed ? <PanelLeft className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
         </button>
 
-        {/* Business and Godown Info */}
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="leading-tight min-w-0">
-            <div className="text-xs font-black text-slate-900 flex items-center gap-1.5 min-w-0">
-              <span className="truncate max-w-[120px] xs:max-w-[160px] sm:max-w-[220px] md:max-w-none">{settings.profile.businessName}</span>
-              <span className="text-[10px] font-semibold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200 hidden sm:inline-block shrink-0">
-                Mohammadpur Godown
-              </span>
-            </div>
-            <div className="text-[11px] text-slate-500 hidden md:block truncate">
-              Dhaka, Bangladesh · Reg: {settings.profile.tradeLicense.slice(0, 15)}...
-            </div>
+        {/* Dynamic Breadcrumbs & Location */}
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <button
+            onClick={() => setActiveView('dashboard')}
+            className="text-slate-400 hover:text-slate-700 transition-colors p-1 rounded hover:bg-slate-100 shrink-0"
+            title="Dashboard Overview"
+          >
+            <Flame className="w-4 h-4 text-orange-600" />
+          </button>
+          <span className="text-slate-300 font-light hidden sm:inline">/</span>
+          <span className="text-xs font-semibold text-slate-500 hidden md:inline truncate max-w-[120px]">
+            {breadcrumbs.section}
+          </span>
+          <span className="text-slate-300 font-light hidden md:inline">/</span>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight truncate max-w-[160px] xs:max-w-[200px] sm:max-w-[280px]">
+              {breadcrumbs.page}
+            </span>
+            <span className="text-[10px] font-semibold bg-emerald-50 text-emerald-800 px-1.5 py-0.2 rounded border border-emerald-200/80 hidden xl:inline-flex items-center gap-1 shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              Mohammadpur Godown
+            </span>
           </div>
         </div>
       </div>

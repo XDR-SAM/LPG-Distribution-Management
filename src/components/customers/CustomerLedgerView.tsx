@@ -15,6 +15,13 @@ export const CustomerLedgerView: React.FC = () => {
   const [selectedCustomerId, setSelectedCustomerId] = useState(
     selectedCustomerForDetails?.id || customers[0]?.id || ''
   );
+
+  React.useEffect(() => {
+    if (selectedCustomerForDetails?.id) {
+      setSelectedCustomerId(selectedCustomerForDetails.id);
+    }
+  }, [selectedCustomerForDetails]);
+
   const [fromDate, setFromDate] = useState('2026-09-01');
   const [toDate, setToDate] = useState('2026-09-14');
 
