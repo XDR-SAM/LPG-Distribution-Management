@@ -285,7 +285,7 @@ export const RestoreImportPanel: React.FC = () => {
                 {jsonFileName ? `Selected: ${jsonFileName}` : 'Click to select or drag and drop a .json backup file'}
               </div>
               <div className="text-[11px] text-slate-400 mt-1">
-                Supported formats: JSON snapshots created from LPG Manager BD
+                Supported formats: JSON snapshots created from LIONS LPG MANAGER
               </div>
             </div>
 

@@ -118,7 +118,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {showExpanded && (
               <div className="truncate min-w-0">
                 <div className="text-sm font-extrabold text-white tracking-tight flex items-center gap-1.5">
-                  LPG Manager <span className="text-orange-500 text-[10px] font-mono px-1 py-0.2 bg-orange-950/80 rounded border border-orange-800/60">BD</span>
+                  LIONS LPG <span className="text-orange-500 text-[10px] font-mono px-1 py-0.2 bg-orange-950/80 rounded border border-orange-800/60">MANAGER</span>
                 </div>
                 <div className="text-[11px] text-slate-400 font-medium truncate">
                   {settings.profile.businessName}

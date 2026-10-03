@@ -322,7 +322,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       // 13. Fetch Settings
       const dbSettings = await fetchSettingsFromDb();
-      if (dbSettings) setSettings(dbSettings);
+      if (dbSettings) {
+        setSettings(prev => ({
+          ...prev,
+          ...dbSettings,
+          aiSettings: {
+            ...prev.aiSettings,
+            ...(dbSettings.aiSettings || {}),
+            groqConfig: dbSettings.aiSettings?.groqConfig || prev.aiSettings?.groqConfig,
+          },
+        }));
+      }
 
       // 14. Fetch Profiles
       const dbProfiles = await fetchProfilesFromDb();

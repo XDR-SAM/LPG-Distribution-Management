@@ -28,11 +28,27 @@ const getGeminiClient = () => {
   });
 };
 
+// Groq configuration constants (key loaded from environment or secured runtime fallback)
+const GROQ_DEFAULT_KEY = process.env.GROQ_API_KEY || '';
+const GROQ_BASE_URL = 'https://api.groq.com/openai/v1';
+
 // Health & Status endpoint
 app.get('/api/ai/status', (_req: Request, res: Response) => {
   res.json({
     geminiAvailable: !!process.env.GEMINI_API_KEY,
-    defaultModel: 'gemini-3.5-flash',
+    groqAvailable: !!GROQ_DEFAULT_KEY,
+    defaultModel: 'openai/gpt-oss-120b',
+    supportedGroqModels: [
+      { id: 'openai/gpt-oss-120b', name: 'OpenAI GPT-OSS 120B', tag: 'Flagship Intelligence (Recommended)' },
+      { id: 'openai/gpt-oss-20b', name: 'OpenAI GPT-OSS 20B', tag: 'High Speed & Reasoning' },
+      { id: 'openai/gpt-oss-safeguard-20b', name: 'OpenAI GPT-OSS Safeguard 20B', tag: 'Policy & Guard Rails' },
+      { id: 'qwen/qwen3.8-27b', name: 'Alibaba Cloud Qwen 3.8 27B', tag: 'Multilingual & Code' },
+      { id: 'canopylabs/orpheus-v1-english', name: 'Canopy Labs Orpheus v1 (English)', tag: 'English Specialist' },
+      { id: 'canopylabs/orpheus-arabic-saudi', name: 'Canopy Labs Orpheus (Arabic)', tag: 'Arabic Specialist' },
+      { id: 'meta-llama/llama-prompt-guard-2-86m', name: 'Meta Prompt Guard 86M', tag: 'Prompt Guard' },
+      { id: 'meta-llama/llama-prompt-guard-2-22m', name: 'Meta Prompt Guard 22M', tag: 'Fast Guard' },
+      { id: 'allam-2-7b', name: 'Allam 2 7B', tag: 'Lightweight' },
+    ],
     supportedGeminiModels: [
       { id: 'gemini-3.5-flash', name: 'Gemini 3.5 Flash', tag: 'General Tasks (Default)' },
       { id: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash-Lite', tag: 'Fast Tasks' },
@@ -42,15 +58,38 @@ app.get('/api/ai/status', (_req: Request, res: Response) => {
   });
 });
 
+// Dynamic Groq Models list from Groq API
+app.get('/api/ai/groq/models', async (_req: Request, res: Response) => {
+  try {
+    const apiKey = process.env.GROQ_API_KEY || GROQ_DEFAULT_KEY;
+    const response = await fetch(`${GROQ_BASE_URL}/models`, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      return res.status(response.status).json({ error: `Groq error: ${errText}` });
+    }
+
+    const data = await response.json();
+    return res.json(data);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message || 'Failed to fetch Groq models' });
+  }
+});
+
 // Main AI Chat & Agent endpoint
 app.post('/api/ai/chat', async (req: Request, res: Response) => {
   try {
     const {
       messages = [],
-      provider = 'gemini',
-      model = 'gemini-3.5-flash',
+      provider = 'groq',
+      model = 'openai/gpt-oss-120b',
       systemInstruction = '',
       databaseContext = null,
+      groqConfig = {},
       openaiConfig = {},
     } = req.body;
 
@@ -129,7 +168,56 @@ app.post('/api/ai/chat', async (req: Request, res: Response) => {
       });
     }
 
-    // 2. OpenAI Compatible Provider (ChatGPT, Groq, Ollama, DeepSeek, LocalAI, etc.)
+    // 2. Groq Ultra-Fast LPU Provider (openai/gpt-oss-120b, openai/gpt-oss-20b, qwen, etc.)
+    if (provider === 'groq') {
+      const apiKey = groqConfig?.apiKey || process.env.GROQ_API_KEY || GROQ_DEFAULT_KEY;
+      const targetModel = groqConfig?.model || model || 'openai/gpt-oss-120b';
+
+      if (!apiKey) {
+        return res.status(400).json({
+          error: 'Groq API Key is missing. Please configure GROQ_API_KEY in the server or in Settings > AI Agent.',
+        });
+      }
+
+      const groqMessages = [
+        { role: 'system', content: fullSystemInstruction },
+        ...messages.map((m: { role: string; content: string }) => ({
+          role: m.role === 'user' ? 'user' : 'assistant',
+          content: m.content || '',
+        })),
+      ];
+
+      const groqRes = await fetch(`${GROQ_BASE_URL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: targetModel,
+          messages: groqMessages,
+          temperature: 0.3,
+        }),
+      });
+
+      if (!groqRes.ok) {
+        const errorBody = await groqRes.text();
+        return res.status(groqRes.status).json({
+          error: `Groq error (${groqRes.status}): ${errorBody}`,
+        });
+      }
+
+      const groqData = await groqRes.json();
+      const replyText = groqData.choices?.[0]?.message?.content || '';
+
+      return res.json({
+        reply: replyText,
+        provider: 'groq',
+        model: targetModel,
+      });
+    }
+
+    // 3. OpenAI Compatible Provider (ChatGPT, Ollama, DeepSeek, LocalAI, etc.)
     if (provider === 'openai') {
       const baseUrl = (openaiConfig?.baseUrl || 'https://api.openai.com/v1').replace(/\/$/, '');
       const apiKey = openaiConfig?.apiKey || process.env.OPENAI_API_KEY || '';
@@ -212,7 +300,7 @@ const setupFrontend = async () => {
 
 setupFrontend().then(() => {
   app.listen(Number(PORT), '0.0.0.0', () => {
-    console.log(`LPG Manager BD Server running on port ${PORT} (isProduction: ${isProduction})`);
+    console.log(`LIONS LPG MANAGER Server running on port ${PORT} (isProduction: ${isProduction})`);
   });
 }).catch(err => {
   console.error('Failed to start server:', err);

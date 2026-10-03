@@ -147,7 +147,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       case 'settings':
         return { section: language === 'bn' ? 'সেটিংস' : 'Settings', page: language === 'bn' ? 'সিস্টেম ও রেট' : 'Godown Settings' };
       default:
-        return { section: 'LPG BD', page: 'Dashboard' };
+        return { section: 'LIONS LPG', page: 'Dashboard' };
     }
   };
 

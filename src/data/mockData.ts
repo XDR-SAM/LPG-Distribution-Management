@@ -50,8 +50,12 @@ export const INITIAL_SETTINGS: AppSettings = {
   financialYear: '2026-2027 (July - June)',
   lastBackupTime: 'Today, 08:30 PM',
   aiSettings: {
-    provider: 'gemini',
+    provider: 'groq',
     geminiModel: 'gemini-3.5-flash',
+    groqConfig: {
+      apiKey: '',
+      model: 'openai/gpt-oss-120b',
+    },
     openaiConfig: {
       baseUrl: 'https://api.openai.com/v1',
       apiKey: '',

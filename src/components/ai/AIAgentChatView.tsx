@@ -24,7 +24,8 @@ import {
   Receipt,
   Truck,
   ExternalLink,
-  ChevronDown
+  ChevronDown,
+  Zap
 } from 'lucide-react';
 import { 
   ChatMessage, 
@@ -43,7 +44,7 @@ import {
 const INITIAL_GREETING: ChatMessage = {
   id: 'msg-welcome',
   role: 'assistant',
-  content: `👋 **Assalamu Alaikum! I am your AI Godown Operations Agent for LPG Manager BD.**
+  content: `👋 **Assalamu Alaikum! I am your AI Godown Operations Agent for LIONS LPG MANAGER.**
 
 I have real-time live access to your godown database:
 - 📦 **Inventory & Cylinders:** Live counts of full, empty, and damaged cylinders across all brands.
@@ -101,14 +102,16 @@ export const AIAgentChatView: React.FC = () => {
 
   // Model switch state
   const aiSettings = settings.aiSettings || {
-    provider: 'gemini' as LLMProvider,
+    provider: 'groq' as LLMProvider,
     geminiModel: 'gemini-3.5-flash' as GeminiModel,
+    groqConfig: { apiKey: '', model: 'openai/gpt-oss-120b' },
     openaiConfig: { baseUrl: 'https://api.openai.com/v1', apiKey: '', model: 'gpt-4o-mini' },
     agentRole: 'Senior Godown Operations Manager & Database Agent',
     autoExecuteActions: true,
   };
 
   const [selectedGeminiModel, setSelectedGeminiModel] = useState<GeminiModel>(aiSettings.geminiModel || 'gemini-3.5-flash');
+  const [selectedGroqModel, setSelectedGroqModel] = useState<string>(aiSettings.groqConfig?.model || 'openai/gpt-oss-120b');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -133,6 +136,20 @@ export const AIAgentChatView: React.FC = () => {
       aiSettings: {
         ...aiSettings,
         geminiModel: model,
+      },
+    });
+  };
+
+  const handleGroqModelChange = (modelId: string) => {
+    setSelectedGroqModel(modelId);
+    updateSettings({
+      aiSettings: {
+        ...aiSettings,
+        provider: 'groq',
+        groqConfig: {
+          apiKey: aiSettings.groqConfig?.apiKey || '',
+          model: modelId,
+        },
       },
     });
   };
@@ -297,6 +314,7 @@ export const AIAgentChatView: React.FC = () => {
 
   // Quick prompt suggestions
   const SUGGESTED_PROMPTS = [
+    { label: '⚡ Fast language models', text: 'Explain the importance of fast language models' },
     { label: '📦 Stock levels for 12kg', text: 'What is our current full, empty, and damaged stock count for 12kg cylinders across all brands?' },
     { label: '💰 Top overdue customers', text: 'Which customers currently have the highest outstanding due balance? Show their phone numbers and amounts.' },
     { label: '📊 Today\'s cashbook & sales', text: 'Give me a brief summary of today\'s total sales, cash collections, and available funds in Cash and bKash.' },
@@ -337,14 +355,74 @@ export const AIAgentChatView: React.FC = () => {
 
         {/* Model Switcher & Utility Actions */}
         <div className="flex flex-wrap items-center gap-2">
-          {aiSettings.provider === 'gemini' ? (
+          {aiSettings.provider === 'groq' ? (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <div className="flex items-center bg-orange-50/80 p-0.5 rounded-lg border border-orange-200 text-xs">
+                <button
+                  type="button"
+                  onClick={() => handleGroqModelChange('openai/gpt-oss-120b')}
+                  className={`px-2.5 py-1 rounded-md font-bold transition-all flex items-center gap-1 ${
+                    selectedGroqModel === 'openai/gpt-oss-120b'
+                      ? 'bg-orange-600 text-white shadow-xs'
+                      : 'text-slate-700 hover:text-orange-950'
+                  }`}
+                  title="OpenAI GPT-OSS 120B on Groq (Flagship)"
+                >
+                  <Zap className="w-3 h-3 fill-current" />
+                  <span>120B</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleGroqModelChange('openai/gpt-oss-20b')}
+                  className={`px-2.5 py-1 rounded-md font-bold transition-all flex items-center gap-1 ${
+                    selectedGroqModel === 'openai/gpt-oss-20b'
+                      ? 'bg-orange-600 text-white shadow-xs'
+                      : 'text-slate-700 hover:text-orange-950'
+                  }`}
+                  title="OpenAI GPT-OSS 20B on Groq (Fast Reasoning)"
+                >
+                  <Zap className="w-3 h-3 fill-current" />
+                  <span>20B</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleGroqModelChange('qwen/qwen3.8-27b')}
+                  className={`px-2.5 py-1 rounded-md font-bold transition-all ${
+                    selectedGroqModel === 'qwen/qwen3.8-27b'
+                      ? 'bg-orange-600 text-white shadow-xs'
+                      : 'text-slate-700 hover:text-orange-950'
+                  }`}
+                  title="Alibaba Cloud Qwen 3.8 27B on Groq"
+                >
+                  Qwen
+                </button>
+              </div>
+
+              <select
+                value={selectedGroqModel}
+                onChange={e => handleGroqModelChange(e.target.value)}
+                className="text-xs bg-white border border-slate-300 text-slate-800 py-1 px-2 rounded-lg font-mono focus:ring-1 focus:ring-orange-500 focus:outline-hidden"
+                title="All Groq Available Models"
+              >
+                <option value="openai/gpt-oss-120b">openai/gpt-oss-120b</option>
+                <option value="openai/gpt-oss-20b">openai/gpt-oss-20b</option>
+                <option value="openai/gpt-oss-safeguard-20b">openai/gpt-oss-safeguard-20b</option>
+                <option value="qwen/qwen3.8-27b">qwen/qwen3.8-27b</option>
+                <option value="canopylabs/orpheus-v1-english">canopylabs/orpheus-v1-english</option>
+                <option value="canopylabs/orpheus-arabic-saudi">canopylabs/orpheus-arabic-saudi</option>
+                <option value="meta-llama/llama-prompt-guard-2-86m">meta-llama/llama-prompt-guard-2-86m</option>
+                <option value="meta-llama/llama-prompt-guard-2-22m">meta-llama/llama-prompt-guard-2-22m</option>
+                <option value="allam-2-7b">allam-2-7b</option>
+              </select>
+            </div>
+          ) : aiSettings.provider === 'gemini' ? (
             <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs">
               <button
                 type="button"
                 onClick={() => handleModelChange('gemini-3.5-flash')}
                 className={`px-2.5 py-1 rounded-md font-bold transition-all ${
                   selectedGeminiModel === 'gemini-3.5-flash'
-                    ? 'bg-orange-600 text-white shadow-xs'
+                    ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
                 title="Gemini 3.5 Flash: Recommended for general tasks"
@@ -356,7 +434,7 @@ export const AIAgentChatView: React.FC = () => {
                 onClick={() => handleModelChange('gemini-3.1-flash-lite')}
                 className={`px-2.5 py-1 rounded-md font-bold transition-all ${
                   selectedGeminiModel === 'gemini-3.1-flash-lite'
-                    ? 'bg-orange-600 text-white shadow-xs'
+                    ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
                 title="Gemini 3.1 Flash-Lite: Fast tasks & quick queries"
@@ -368,7 +446,7 @@ export const AIAgentChatView: React.FC = () => {
                 onClick={() => handleModelChange('gemini-3.1-pro-preview')}
                 className={`px-2.5 py-1 rounded-md font-bold transition-all ${
                   selectedGeminiModel === 'gemini-3.1-pro-preview'
-                    ? 'bg-orange-600 text-white shadow-xs'
+                    ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
                 title="Gemini 3.1 Pro Preview: Complex reasoning & audits"
@@ -427,8 +505,17 @@ export const AIAgentChatView: React.FC = () => {
             Total Customer Due: <strong className="text-slate-900">৳{totalCustomerDue.toLocaleString()}</strong>
           </span>
         </div>
-        <div className="text-[10px] text-slate-400 font-mono hidden md:block">
-          Provider: {aiSettings.provider === 'gemini' ? `Google Gemini (${selectedGeminiModel})` : `OpenAI (${aiSettings.openaiConfig.model})`}
+        <div className="text-[10px] text-slate-400 font-mono hidden md:flex items-center gap-1.5">
+          {aiSettings.provider === 'groq' ? (
+            <span className="flex items-center gap-1 text-orange-600 font-bold bg-orange-50 px-2 py-0.5 rounded border border-orange-200">
+              <Zap className="w-3 h-3 fill-orange-600 text-orange-600" />
+              Groq LPU ({selectedGroqModel})
+            </span>
+          ) : aiSettings.provider === 'gemini' ? (
+            <span>Provider: Google Gemini ({selectedGeminiModel})</span>
+          ) : (
+            <span>Provider: OpenAI ({aiSettings.openaiConfig.model})</span>
+          )}
         </div>
       </div>
 

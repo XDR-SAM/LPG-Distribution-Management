@@ -1,5 +1,5 @@
 {
-  "name": "LPG Manager BD",
+  "name": "lions-lpg-manager",
   "description": "Desktop-first LPG cylinder distribution and godown management software for Bangladesh distributors.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

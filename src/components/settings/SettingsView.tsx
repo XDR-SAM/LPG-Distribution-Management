@@ -360,7 +360,7 @@ export const SettingsView: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-black text-sm text-white">LPG Manager BD</span>
+              <span className="font-black text-sm text-white">LIONS LPG MANAGER</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 font-bold border border-orange-500/30">
                 Enterprise v1.2
               </span>

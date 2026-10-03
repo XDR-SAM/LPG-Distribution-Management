@@ -217,8 +217,12 @@ export const sendChatMessageToAgent = async (params: {
       content: m.content,
     })),
     provider: aiSettings.provider,
-    model: aiSettings.provider === 'gemini' ? aiSettings.geminiModel : aiSettings.openaiConfig.model,
-    systemInstruction: `You are the AI Godown Operations Agent for "LPG Manager BD" (Mohammadpur Godown, Rahman LPG Distribution, Dhaka, Bangladesh).
+    model: aiSettings.provider === 'gemini' 
+      ? aiSettings.geminiModel 
+      : aiSettings.provider === 'groq'
+      ? (aiSettings.groqConfig?.model || 'openai/gpt-oss-120b')
+      : aiSettings.openaiConfig.model,
+    systemInstruction: `You are the AI Godown Operations Agent for "LIONS LPG MANAGER" (Mohammadpur Godown, Rahman LPG Distribution, Dhaka, Bangladesh).
 Your role: ${aiSettings.agentRole || 'Senior Operations Manager & Godown In-Charge'}.
 You speak fluent English and Bengali (Bangla/Banglish as the user prefers). You are courteous, highly competent, and precise with numbers and BDT currency (৳).
 
@@ -308,6 +312,7 @@ SUPPORTED ACTIONS AND PARAMS:
 
 Always be concise, professional, and clear with exact invoice numbers, cylinder quantities, and amounts in BDT.`,
     databaseContext,
+    groqConfig: aiSettings.groqConfig,
     openaiConfig: aiSettings.openaiConfig,
   };
 
@@ -331,7 +336,7 @@ Always be concise, professional, and clear with exact invoice numbers, cylinder 
   return {
     reply: cleanText,
     action,
-    modelUsed: data.model || aiSettings.geminiModel,
+    modelUsed: data.model || (aiSettings.provider === 'groq' ? (aiSettings.groqConfig?.model || 'openai/gpt-oss-120b') : aiSettings.geminiModel),
     providerUsed: data.provider || aiSettings.provider,
   };
 };

@@ -3,7 +3,7 @@ export type Language = 'en' | 'bn';
 export const translations: Record<Language, Record<string, string>> = {
   en: {
     // App & Header
-    'app.name': 'LPG Manager BD',
+    'app.name': 'LIONS LPG MANAGER',
     'app.subtitle': 'LPG Cylinder Distribution & Godown System',
     'app.godown_badge': 'Mohammadpur Godown',
     'app.search_placeholder': 'Search invoice, customer, cylinder...',
@@ -588,7 +588,7 @@ export const translations: Record<Language, Record<string, string>> = {
 
   bn: {
     // App & Header
-    'app.name': 'এলপিজি ম্যানেজার বিডি',
+    'app.name': 'লায়ন্স এলপিজি ম্যানেজার',
     'app.subtitle': 'এলপিজি গ্যাস সিলিন্ডার ডিস্ট্রিবিউশন ও গুদাম ব্যবস্থাপনা',
     'app.godown_badge': 'মোহাম্মদপুর গুদাম',
     'app.search_placeholder': 'ইনভয়েস, গ্রাহক, সিলিন্ডার খুঁজুন...',

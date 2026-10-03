@@ -485,16 +485,34 @@ export interface AppSettings {
   aiSettings?: AISettings;
 }
 
-export type LLMProvider = 'gemini' | 'openai';
+export type LLMProvider = 'gemini' | 'groq' | 'openai';
 
 export type GeminiModel = 
   | 'gemini-3.5-flash' 
   | 'gemini-3.1-pro-preview' 
   | 'gemini-3.1-flash-lite';
 
+export type GroqModel =
+  | 'openai/gpt-oss-120b'
+  | 'openai/gpt-oss-20b'
+  | 'openai/gpt-oss-safeguard-20b'
+  | 'qwen/qwen3.8-27b'
+  | 'canopylabs/orpheus-v1-english'
+  | 'canopylabs/orpheus-arabic-saudi'
+  | 'meta-llama/llama-prompt-guard-2-86m'
+  | 'meta-llama/llama-prompt-guard-2-22m'
+  | 'allam-2-7b'
+  | string;
+
+export interface GroqConfig {
+  apiKey: string;
+  model: string;
+}
+
 export interface AISettings {
   provider: LLMProvider;
   geminiModel: GeminiModel;
+  groqConfig?: GroqConfig;
   openaiConfig: {
     baseUrl: string;
     apiKey: string;
