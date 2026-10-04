@@ -39,6 +39,7 @@ import { ExpensesView } from './components/accounts/ExpensesView';
 import { AccountsSummaryView } from './components/accounts/AccountsSummaryView';
 import { DailyReportView } from './components/reports/DailyReportView';
 import { CylinderAuditView } from './components/reports/CylinderAuditView';
+import { MonthClosingEvaluationView } from './components/reports/MonthClosingEvaluationView';
 import { SettingsView } from './components/settings/SettingsView';
 import { AuditLogsView } from './components/audit/AuditLogsView';
 import { LoginView } from './components/auth/LoginView';
@@ -133,6 +134,10 @@ const MainContent: React.FC = () => {
         return <DailyReportView />;
       case 'report_cylinder_audit':
         return <CylinderAuditView />;
+      case 'report_month_closing':
+      case 'month_closing_report':
+      case 'month_closing':
+        return <MonthClosingEvaluationView />;
       case 'ai_agent':
         return <AIAgentChatView />;
       case 'settings':

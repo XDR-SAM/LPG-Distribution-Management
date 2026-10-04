@@ -18,7 +18,8 @@ import {
   AppSettings,
   User,
   PaymentMethod,
-  AccountType
+  AccountType,
+  MonthClosingReport
 } from '../types';
 
 // ==========================================
@@ -274,9 +275,14 @@ export const fetchProductsFromDb = async (): Promise<CylinderProduct[]> => {
   }
 
   return prods.map((p: any) => {
-    const s = stockMap[p.id] || { full: 0, empty: 0, damaged: 0, lost: 0, held: 0 };
-    const brandName = p.brands?.name || p.name.split(' ')[0] || 'LPG';
-    const sizeStr = `${p.cylinder_size_kg || 12} KG` as any;
+    const s = stockMap[p.id];
+    const brandName = p.brand || p.brands?.name || (p.name ? p.name.split(' ')[0] : 'LPG');
+    const sizeStr = (p.size || `${p.cylinder_size_kg || 12} KG`) as any;
+    const fullStock = Math.max(0, Number(p.full_stock || 0) + (s ? s.full : 0));
+    const emptyStock = Math.max(0, Number(p.empty_stock || 0) + (s ? s.empty : 0));
+    const damagedStock = Math.max(0, Number(p.damaged_stock || 0) + (s ? s.damaged : 0));
+    const lostStock = Math.max(0, Number(p.lost_stock || 0) + (s ? s.lost : 0));
+    const customerHeldStock = Math.max(0, Number(p.customer_held_stock || 0) + (s ? s.held : 0));
 
     return {
       id: p.id,
@@ -288,16 +294,16 @@ export const fetchProductsFromDb = async (): Promise<CylinderProduct[]> => {
       sellingPrice: Number(p.selling_price || 0),
       dealerPrice: Number(p.dealer_price || p.selling_price || 0),
       depositAmount: Number(p.deposit_amount || 1100),
-      minStock: Number(p.minimum_stock || 10),
-      minStockLevel: Number(p.minimum_stock || 10),
+      minStock: Number(p.minimum_stock || p.min_stock || 10),
+      minStockLevel: Number(p.minimum_stock || p.min_stock || 10),
       active: p.active ?? true,
-      fullStock: Math.max(0, s.full),
-      emptyStock: Math.max(0, s.empty),
-      damagedStock: Math.max(0, s.damaged),
-      lostStock: Math.max(0, s.lost),
-      customerHeldStock: Math.max(0, s.held),
-      supplierHeldStock: 0,
-      totalCylinders: Math.max(0, s.full) + Math.max(0, s.empty) + Math.max(0, s.damaged),
+      fullStock,
+      emptyStock,
+      damagedStock,
+      lostStock,
+      customerHeldStock,
+      supplierHeldStock: Number(p.supplier_held_stock || 0),
+      totalCylinders: fullStock + emptyStock + damagedStock,
     };
   });
 };
@@ -1322,3 +1328,40 @@ export const fetchProfilesFromDb = async (): Promise<User[]> => {
     lastLogin: p.last_login ? new Date(p.last_login).toLocaleDateString('en-GB') : 'Recently',
   }));
 };
+
+// ==========================================
+// 14. MONTH CLOSING EVALUATION & WAREHOUSE STOCK
+// ==========================================
+export const fetchMonthClosingReportFromDb = async (): Promise<MonthClosingReport | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('app_settings')
+      .select('settings')
+      .eq('id', 'month_closing_report')
+      .maybeSingle();
+
+    if (error || !data?.settings) return null;
+    return data.settings as MonthClosingReport;
+  } catch (err) {
+    console.warn('Error fetching month closing report from Supabase:', err);
+    return null;
+  }
+};
+
+export const saveMonthClosingReportToDb = async (report: MonthClosingReport): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('app_settings')
+      .upsert({
+        id: 'month_closing_report',
+        settings: report,
+        updated_at: new Date().toISOString()
+      });
+
+    return !error;
+  } catch (err) {
+    console.error('Error saving month closing report to Supabase:', err);
+    return false;
+  }
+};
+

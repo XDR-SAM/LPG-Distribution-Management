@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { StatCard } from '../common/StatCard';
 import { PaymentStatusBadge, CylinderDueBadge } from '../common/Badge';
@@ -20,7 +20,9 @@ import {
   ChevronRight,
   AlertTriangle,
   Clock,
-  Sparkles
+  Sparkles,
+  Layers,
+  ArrowUpRight
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -102,24 +104,58 @@ export const DashboardView: React.FC = () => {
     { category: language === 'bn' ? 'হোটেল' : 'Hotels', collected: 45000, due: 24000 },
   ];
 
-  // Cylinder Stock by Brand Donut Data
-  const brandStockData = [
-    { name: 'Bashundhara', full: 99, empty: 41, color: '#dc2626' },
-    { name: 'Omera', full: 90, empty: 53, color: '#ea580c' },
-    { name: 'Jamuna', full: 61, empty: 28, color: '#0284c7' },
-    { name: 'Beximco', full: 95, empty: 36, color: '#16a34a' },
-    { name: 'Navana', full: 81, empty: 30, color: '#7c3aed' },
-  ];
+  // Cylinder Stock by Brand Donut Data (Calculated dynamically from real database stock)
+  const brandColors: Record<string, string> = {
+    'BM': '#8b5cf6',
+    'Beximco': '#2563eb',
+    'Omera': '#16a34a',
+    'Uni Gas': '#0284c7',
+    'Green': '#22c55e',
+    'AyGAZ': '#0ea5e9',
+    'Jamuna': '#d97706',
+    'Fresh': '#06b6d4',
+    'Teer': '#f43f5e',
+    'Bengal': '#10b981',
+    'Bashundhara': '#ef4444',
+    'Jamuna Faibar': '#b45309',
+  };
 
-  // Brand summary items
-  const brandSummaryItems = [
-    { brand: 'Bashundhara LP Gas', size: '12 KG', full: 85, empty: 32, due: 18, color: 'text-rose-600' },
-    { brand: 'Omera LPG', size: '12 KG', full: 72, empty: 41, due: 13, color: 'text-orange-600' },
-    { brand: 'Jamuna Gas', size: '12 KG', full: 61, empty: 28, due: 21, color: 'text-blue-600' },
-    { brand: 'Beximco LPG', size: '12 KG', full: 95, empty: 36, due: 17, color: 'text-emerald-600' },
-    { brand: 'Navana LPG', size: '12 KG', full: 81, empty: 30, due: 15, color: 'text-purple-600' },
-    { brand: 'Bashundhara LP Gas', size: '35 KG', full: 14, empty: 9, due: 5, color: 'text-rose-700' },
-  ];
+  const brandStockData = useMemo(() => {
+    const map: Record<string, { full: number; empty: number }> = {};
+    products.forEach(p => {
+      const b = p.brand;
+      if (!map[b]) map[b] = { full: 0, empty: 0 };
+      map[b].full += p.fullStock;
+      map[b].empty += p.emptyStock;
+    });
+
+    return Object.entries(map)
+      .map(([name, counts]) => ({
+        name,
+        full: counts.full,
+        empty: counts.empty,
+        total: counts.full + counts.empty,
+        color: brandColors[name] || '#3b82f6',
+      }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 6);
+  }, [products]);
+
+  // Brand summary items from database products
+  const brandSummaryItems = useMemo(() => {
+    return products
+      .filter(p => p.fullStock > 0 || p.emptyStock > 100)
+      .sort((a, b) => (b.fullStock + b.emptyStock) - (a.fullStock + a.emptyStock))
+      .slice(0, 6)
+      .map(p => ({
+        brand: p.name || `${p.brand} ${p.size}`,
+        size: p.size,
+        full: p.fullStock,
+        empty: p.emptyStock,
+        due: 0,
+        color: 'text-slate-800',
+      }));
+  }, [products]);
 
   const recentSales = sales.slice(0, 5);
 
@@ -167,6 +203,41 @@ export const DashboardView: React.FC = () => {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Client Month Closing Cylinder Evaluation & Supabase Verified Banner */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white rounded-xl p-4 shadow-sm border border-slate-700/80 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-orange-600/90 text-white flex items-center justify-center shrink-0 shadow-xs">
+            <Layers className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-extrabold text-sm sm:text-base tracking-tight text-white">
+                {language === 'bn' ? 'ক্লায়েন্ট প্রদত্ত মাসিক ক্লোজিং সিলিন্ডার মূল্যায়ন ও গোডাউন স্টক' : 'Client Month Closing Evaluation & Warehouse Matrix'}
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">
+                7,560 {language === 'bn' ? 'টি সিলিন্ডার' : 'Cylinders'}
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-500/20 text-orange-300 border border-orange-500/30 font-mono">
+                ৳29,32,600 {language === 'bn' ? 'ব্যালেন্স' : 'Valuation'}
+              </span>
+            </div>
+            <p className="text-xs text-slate-300 mt-0.5">
+              {language === 'bn'
+                ? '৮টি গোডাউন (Signboard, Rayerbagh, Mongla, Amuliya, Postokhola, Jatrabari) জুড়ে খালি ও ভর্তি সিলিন্ডারের সম্পূর্ণ ডাটাবেজ রেকর্ড।'
+                : 'Verified stock counts across 8 warehouses with full Refill valuation and Cash in Hand reconciliation.'}
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setActiveView('report_month_closing')}
+          className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all hover:translate-x-0.5 self-start sm:self-auto shrink-0"
+        >
+          <span>{language === 'bn' ? 'গোডাউন স্টক ম্যাট্রিক্স দেখুন' : 'View Warehouse Matrix'}</span>
+          <ArrowUpRight className="w-4 h-4" />
+        </button>
       </div>
 
       {/* 8 Top KPI Cards */}

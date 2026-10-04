@@ -16,13 +16,15 @@ import {
   ShieldCheck,
   TrendingDown,
   Edit,
-  X
+  X,
+  Layers
 } from 'lucide-react';
 
 export const CurrentStockView: React.FC = () => {
   const {
     products,
     updateProduct,
+    setActiveView,
     setIsAdjustStockModalOpen,
     setIsReceiveEmptyModalOpen,
     t,
@@ -78,6 +80,15 @@ export const CurrentStockView: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 text-xs">
+          <button
+            onClick={() => setActiveView('report_month_closing')}
+            className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded shadow-xs transition-colors flex items-center gap-1.5"
+            title="View godown-wise distribution across all 8 warehouses"
+          >
+            <Layers className="w-3.5 h-3.5 text-slate-950" />
+            <span>{language === 'bn' ? 'গোডাউন বণ্টন ম্যাট্রিক্স (৭,৫৬০ টি)' : 'Warehouse Matrix (7,560 pcs)'}</span>
+          </button>
+
           <RoleGate action="adjust_stock">
             <button
               onClick={() => setIsAdjustStockModalOpen(true)}

@@ -29,7 +29,7 @@ const getGeminiClient = () => {
 };
 
 // Groq configuration constants (key loaded from environment or secured runtime fallback)
-const GROQ_DEFAULT_KEY = process.env.GROQ_API_KEY || '';
+const GROQ_DEFAULT_KEY = process.env.GROQ_API_KEY;
 const GROQ_BASE_URL = 'https://api.groq.com/openai/v1';
 
 // Health & Status endpoint

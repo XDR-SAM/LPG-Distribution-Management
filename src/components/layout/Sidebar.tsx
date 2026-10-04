@@ -21,6 +21,7 @@ import {
   BarChart3,
   ShieldCheck,
   ClipboardList,
+  Layers,
   Settings,
   ChevronDown,
   ChevronRight,
@@ -63,7 +64,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     customers: true,
     accounts: true,
     suppliers: false,
-    reports: false,
+    reports: true,
   });
 
   const toggleSection = (key: string) => {
@@ -89,7 +90,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const showCustomersSection = canView('customer_list') || canView('customer_cylinder_due') || canView('customer_ledger');
   const showSuppliersSection = canView('supplier_list') || canView('supplier_ledger');
   const showAccountsSection = canView('accounts_cashbook') || canView('accounts_receive') || canView('accounts_pay') || canView('accounts_expenses') || canView('accounts_summary');
-  const showReportsSection = canView('report_daily') || canView('report_cylinder_audit');
+  const showReportsSection = canView('report_daily') || canView('report_cylinder_audit') || canView('report_month_closing');
 
   return (
     <>
@@ -608,18 +609,72 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Reports Center */}
           {showReportsSection && (
             <div className="pt-1">
-              <button
-                onClick={() => navigateTo('report_daily')}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                  isNavActive('report_daily') || isNavActive('report_cylinder_audit')
-                    ? 'bg-orange-600 text-white'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                }`}
-                title={t('nav.reports_section')}
-              >
-                <BarChart3 className="w-4 h-4 shrink-0 text-indigo-400" />
-                {showExpanded && <span className="font-semibold">{t('nav.reports_section')}</span>}
-              </button>
+              {showExpanded && (
+                <button
+                  onClick={() => toggleSection('reports')}
+                  className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-200"
+                >
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>{t('nav.reports_section')}</span>
+                  </div>
+                  {openSections.reports ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                </button>
+              )}
+
+              {(openSections.reports || isCompact) && (
+                <div className="space-y-0.5 mt-0.5">
+                  {canView('report_daily') && (
+                    <button
+                      onClick={() => navigateTo('report_daily')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('report_daily')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.daily_statement')}
+                    >
+                      <BarChart3 className="w-4 h-4 shrink-0 text-indigo-400" />
+                      {showExpanded && <span>{t('nav.daily_statement')}</span>}
+                    </button>
+                  )}
+
+                  {canView('report_cylinder_audit') && (
+                    <button
+                      onClick={() => navigateTo('report_cylinder_audit')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
+                        isNavActive('report_cylinder_audit')
+                          ? 'bg-orange-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                      title={t('nav.cylinder_audit')}
+                    >
+                      <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-400" />
+                      {showExpanded && <span>{t('nav.cylinder_audit')}</span>}
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => navigateTo('report_month_closing')}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-md font-medium transition-colors ${
+                      isNavActive('report_month_closing') || isNavActive('month_closing_report') || isNavActive('month_closing')
+                        ? 'bg-orange-600 text-white'
+                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                    }`}
+                    title={t('nav.month_closing', 'Month Closing Evaluation')}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Layers className="w-4 h-4 shrink-0 text-amber-400" />
+                      {showExpanded && <span className="truncate">{t('nav.month_closing', 'Month Closing Evaluation')}</span>}
+                    </div>
+                    {showExpanded && (
+                      <span className="text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded border border-amber-500/30">
+                        7,560
+                      </span>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -740,20 +795,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
 
-          {/* Makezaa Studio Credit */}
+          {/* Copyright & Developer Credit */}
           {showExpanded ? (
-            <div className="pt-2 mt-1 border-t border-slate-800/80 px-1 text-center">
-              <a
-                href="https://makezaa.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] text-slate-400 hover:text-orange-400 transition-colors inline-flex items-center gap-1 group"
-                title="Made by Makezaa Studio Inc."
-              >
-                <span>Made by</span>
-                <span className="font-semibold text-slate-300 group-hover:text-orange-300">Makezaa Studio Inc.</span>
-                <ExternalLink className="w-2.5 h-2.5 opacity-60 group-hover:opacity-100" />
-              </a>
+            <div className="pt-2 mt-1 border-t border-slate-800/80 px-1 text-center select-none">
+              <div className="text-[10px] text-slate-400 font-medium leading-relaxed">
+                <span className="text-slate-400 font-semibold">© 2026 Lions IT Solution</span>
+                <span className="mx-1 text-slate-600">|</span>
+                <a
+                  href="https://makezaa.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-400 hover:text-orange-400 transition-colors inline-flex items-center gap-1 group"
+                  title="Makezaa Studio Inc. (makezaa.com)"
+                >
+                  <span>Developed by <strong className="font-semibold text-slate-300 group-hover:text-orange-300">Makezaa Studio Inc.</strong></span>
+                  <ExternalLink className="w-2.5 h-2.5 opacity-60 group-hover:opacity-100" />
+                </a>
+              </div>
             </div>
           ) : (
             <div className="pt-1.5 flex justify-center">
@@ -761,10 +819,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 href="https://makezaa.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[9px] font-bold text-slate-500 hover:text-orange-400 transition-colors"
-                title="Made by Makezaa Studio Inc. (makezaa.com)"
+                className="text-[9px] font-mono font-bold text-slate-500 hover:text-orange-400 transition-colors text-center"
+                title="© 2026 Lions IT Solution | Developed by Makezaa Studio Inc."
               >
-                MZ
+                © 2026
               </a>
             </div>
           )}

@@ -1,9 +1,9 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { ShieldCheck, Printer, CheckCircle } from 'lucide-react';
+import { ShieldCheck, Printer, CheckCircle, Layers } from 'lucide-react';
 
 export const CylinderAuditView: React.FC = () => {
-  const { products, t, formatCurrency, formatQty, toBnNum } = useApp();
+  const { products, setActiveView, t, formatCurrency, formatQty, toBnNum } = useApp();
 
   const totalFull = products.reduce((sum, p) => sum + p.fullStock, 0);
   const totalEmpty = products.reduce((sum, p) => sum + p.emptyStock, 0);
@@ -25,13 +25,23 @@ export const CylinderAuditView: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => window.print()}
-          className="px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold text-xs flex items-center gap-1.5 shadow-xs"
-        >
-          <Printer className="w-4 h-4" />
-          <span>{t('report.print_audit')}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setActiveView('report_month_closing')}
+            className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded font-black text-xs flex items-center gap-1.5 shadow-xs transition-colors"
+          >
+            <Layers className="w-4 h-4 text-slate-950" />
+            <span>Month Closing Matrix (7,560)</span>
+          </button>
+
+          <button
+            onClick={() => window.print()}
+            className="px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold text-xs flex items-center gap-1.5 shadow-xs"
+          >
+            <Printer className="w-4 h-4" />
+            <span>{t('report.print_audit')}</span>
+          </button>
+        </div>
       </div>
 
       {/* Audit Status Banner */}

@@ -31,6 +31,9 @@ export const canAccessView = (role: UserRole = 'admin', view: string): boolean =
     daily_report: 'report_daily',
     reports: 'report_daily',
     reports_center: 'report_daily',
+    report_month_closing: 'report_daily',
+    month_closing_report: 'report_daily',
+    month_closing: 'report_daily',
     audit_log: 'audit_logs',
   };
 

@@ -33,7 +33,9 @@ import {
   logAuditInDb,
   fetchSettingsFromDb,
   updateSettingsInDb,
-  fetchProfilesFromDb
+  fetchProfilesFromDb,
+  fetchMonthClosingReportFromDb,
+  saveMonthClosingReportToDb
 } from '../services/supabaseDataService';
 import { 
   User, 
@@ -57,8 +59,10 @@ import {
   AppSettings,
   AccountType,
   PaymentMethod,
-  UserRole
+  UserRole,
+  MonthClosingReport
 } from '../types';
+import { INITIAL_MONTH_CLOSING_REPORT } from '../data/monthClosingData';
 import {
   INITIAL_SETTINGS,
   INITIAL_USERS,
@@ -125,6 +129,12 @@ interface AppContextType {
   // Database status
   isSupabaseConnected: boolean;
   refreshDataFromSupabase: () => Promise<void>;
+
+  // Month Closing Evaluation & Warehouse Distribution
+  monthClosingReport: MonthClosingReport;
+  setMonthClosingReport: React.Dispatch<React.SetStateAction<MonthClosingReport>>;
+  refreshMonthClosingReport: () => Promise<void>;
+  saveMonthClosingReport: (report: MonthClosingReport) => Promise<boolean>;
 
   // Data
   settings: AppSettings;
@@ -212,6 +222,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [users, setUsers] = useState<User[]>(INITIAL_USERS);
   const [brands, setBrands] = useState<Brand[]>(INITIAL_BRANDS);
   const [products, setProducts] = useState<CylinderProduct[]>(INITIAL_PRODUCTS);
+  const [monthClosingReport, setMonthClosingReport] = useState<MonthClosingReport>(INITIAL_MONTH_CLOSING_REPORT);
   const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
   const [suppliers, setSuppliers] = useState<Supplier[]>(INITIAL_SUPPLIERS);
   const [sales, setSales] = useState<Sale[]>(INITIAL_SALES);
@@ -338,10 +349,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const dbProfiles = await fetchProfilesFromDb();
       if (dbProfiles.length > 0) setUsers(dbProfiles);
 
+      // 15. Fetch Month Closing Evaluation Report & Warehouse Matrix
+      const dbReport = await fetchMonthClosingReportFromDb();
+      if (dbReport) {
+        setMonthClosingReport(dbReport);
+      }
+
       setIsSupabaseConnected(true);
     } catch (err: any) {
       console.warn('Supabase data load notice (migrations may still be pending in Supabase Studio):', err.message);
     }
+  }, []);
+
+  const refreshMonthClosingReport = useCallback(async () => {
+    try {
+      const dbReport = await fetchMonthClosingReportFromDb();
+      if (dbReport) {
+        setMonthClosingReport(dbReport);
+      }
+    } catch (err) {
+      console.warn('Failed to refresh month closing report:', err);
+    }
+  }, []);
+
+  const saveMonthClosingReport = useCallback(async (report: MonthClosingReport) => {
+    setMonthClosingReport(report);
+    return await saveMonthClosingReportToDb(report);
   }, []);
 
   // Initial mount: check session and load real Supabase data
@@ -1456,6 +1489,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveView,
         isSupabaseConnected,
         refreshDataFromSupabase,
+        monthClosingReport,
+        setMonthClosingReport,
+        refreshMonthClosingReport,
+        saveMonthClosingReport,
         settings,
         updateSettings,
         users,

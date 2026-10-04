@@ -74,12 +74,13 @@ export const LanguageToggle: React.FC<LanguageToggleProps> = ({
   // Default 'pill' variant (ideal for TopBar header)
   return (
     <div
-      className={`inline-flex items-center bg-slate-100/90 hover:bg-slate-200/80 p-0.5 rounded-md border border-slate-200 text-xs select-none transition-colors ${className}`}
+      className={`inline-flex items-center bg-slate-100/90 hover:bg-slate-200/80 p-0.5 rounded-lg border border-slate-200 text-xs select-none transition-colors shrink-0 ${className}`}
       title="Toggle between English and বাংলা"
     >
       <button
+        type="button"
         onClick={() => setLanguage('en')}
-        className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all ${
+        className={`px-2 py-0.5 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
           language === 'en'
             ? 'bg-white text-slate-900 shadow-2xs'
             : 'text-slate-500 hover:text-slate-700'
@@ -88,8 +89,9 @@ export const LanguageToggle: React.FC<LanguageToggleProps> = ({
         EN
       </button>
       <button
+        type="button"
         onClick={() => setLanguage('bn')}
-        className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all ${
+        className={`px-2 py-0.5 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
           language === 'bn'
             ? 'bg-orange-600 text-white shadow-2xs'
             : 'text-slate-500 hover:text-slate-700'

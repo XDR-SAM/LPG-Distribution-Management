@@ -26,6 +26,8 @@ export type CylinderSize =
   | '5.5 KG' 
   | '12 KG' 
   | '15 KG' 
+  | '20 KG'
+  | '22 KG'
   | '25 KG' 
   | '35 KG' 
   | '45 KG';
@@ -40,6 +42,7 @@ export interface Brand {
 
 export interface CylinderProduct {
   id: string;
+  name?: string;
   brand: string;
   size: CylinderSize;
   sku: string;
@@ -552,4 +555,76 @@ export interface ChatMessage {
   providerUsed?: LLMProvider;
   action?: AgentAction;
 }
+
+export interface WarehouseRowData {
+  brand: string;
+  size?: string;
+  total: number;
+  Signboard: number;
+  Rayerbagh: number;
+  Amuliya: number;
+  Postokhola: number;
+  Jatrabari: number;
+  Mongla: number;
+  X: number;
+  Y: number;
+}
+
+export interface MonthClosingBalanceSheet {
+  refillGasAmount: number;
+  cashInHand: number;
+  cashInBank: number;
+  closingCompanyDO: number;
+  grandTotalAmount: number;
+  currency: string;
+}
+
+export interface MonthClosingEvaluationSummary {
+  total12KgEmpty: number;
+  total12KgRefill: number;
+  total12KgCombined: number;
+  total35KgEmpty: number;
+  total35KgRefill: number;
+  total35KgCombined: number;
+  total45KgEmpty: number;
+  total45KgRefill: number;
+  total45KgCombined: number;
+  totalMultiEmpty: number;
+  totalMultiRefill: number;
+  totalMultiCombined: number;
+  grandTotalEmpty: number;
+  grandTotalRefill: number;
+  grandTotalCylinders: number;
+  warehouseTotals: {
+    Signboard: number;
+    Rayerbagh: number;
+    Amuliya: number;
+    Postokhola: number;
+    Jatrabari: number;
+    Mongla: number;
+    X: number;
+    Y: number;
+    Total: number;
+  };
+}
+
+export interface MonthClosingReport {
+  title: string;
+  evaluationDate: string;
+  syncedAt: string;
+  evaluationSummary: MonthClosingEvaluationSummary;
+  balanceSheet: MonthClosingBalanceSheet;
+  warehouses: string[];
+  matrix: {
+    size12KgEmpty: WarehouseRowData[];
+    size12KgRefill: WarehouseRowData[];
+    size35KgEmpty: WarehouseRowData[];
+    size35KgRefill: WarehouseRowData[];
+    size45KgEmpty: WarehouseRowData[];
+    size45KgRefill: WarehouseRowData[];
+    sizeMultiEmpty: WarehouseRowData[];
+    sizeMultiRefill: WarehouseRowData[];
+  };
+}
+
 
